@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "507254725905",
+    "project_id": "query-baaee",
+    "storage_bucket": "query-baaee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507254725905:android:f56afd54ca4ca90d60c0b0",
+        "android_client_info": {
+          "package_name": "com.example.my_flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-ubn4Brfi76t3phZ2n6E-xp6OitnThKY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

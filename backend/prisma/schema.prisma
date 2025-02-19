@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  phoneNumber       String            @unique
+  password          String?
+  fullName          String?
+  fcmToken          String?
+  profileUrl        String?
+  bio               String?
+  isActive          Boolean           @default(false)
+  classId           String?
+  boardId           String?
+  class             Class?            @relation(fields: [classId], references: [id], onDelete: SetNull)
+  board             Board?            @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  settings          Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  notifications     Notification[]
+  userInteraction   UserInteraction[]
+  session           Session?
+  subjects          UserSubject[]
+  questions         Question[]
+  chapters          Chapter[]
+  exam              Exam[]
+  challengeSent     Challenge[]       @relation("ChallengeSent")
+  challengeReceived Challenge[]       @relation("ChallengeReceived")
+  examAttempt       ExamAttempt[]
+  sharedQuestion    SharedQuestion[]
+  challenge         Challenge[]
+}
+
+enum MateRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model UserInteraction {
+  id          String            @id @default(cuid())
+  followerId  String
+  followingId String
+  status      MateRequestStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  user        User?             @relation(fields: [userId], references: [id])
+  userId      String?
+
+  @@unique([followerId, followingId])
+}
+
+model Subject {
+  id          String        @id @default(cuid())
+  name        String
+  questions   Question[]
+  userSubject UserSubject[]
+  chapters    Chapter[]
+  Exam        Exam[]
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@unique([userId, subjectId, name])
+}
+
+model UserSubject {
+  id        String  @id @default(cuid())
+  userId    String
+  subjectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+}
+
+model Session {
+  id       String @id @default(uuid())
+  userId   String @unique
+  token    String @db.Text
+  deviceId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Otp {
+  id          String   @id @default(uuid())
+  phoneNumber String
+  code        String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Board {
+  id       String     @id @default(cuid())
+  name     String     @unique
+  user     User[]
+  Question Question[]
+}
+
+model Class {
+  id        String     @id @default(cuid())
+  name      String
+  user      User[]
+  createdAt DateTime   @default(now())
+  Question  Question[]
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  userId    String?
+  content   String   @db.Text
+  subjectId String?
+  classId   String?
+  boardId   String?
+  chapterId String?
+  createdAt DateTime @default(now())
+  marks     Int?
+  answers   Answer[]
+
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subject         Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  class           Class?           @relation(fields: [classId], references: [id], onDelete: SetNull)
+  board           Board?           @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  chapter         Chapter?         @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  sharedQuestions SharedQuestion[]
+}
+
+model SharedQuestion {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  image     String?
+  screen    String?
+  params    String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model DynamicContent {
+  id        String   @id @default(cuid())
+  title     String
+  subjects  String[]
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tag       String?
+}
+
+model Exam {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  subjectId     String
+  topic         String?
+  duration      Int?
+  noOfQuestions Int
+  createdAt     DateTime @default(now())
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions   ExamQuestion[]
+  challenge   Challenge[]
+  examAttempt ExamAttempt[]
+}
+
+model ExamQuestion {
+  id         String   @id @default(cuid())
+  examId     String
+  question   String   @db.Text
+  optionA    String
+  optionB    String
+  optionC    String
+  optionD    String
+  correctAns String
+  userAnswer String?
+  createdAt  DateTime @default(now())
+
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+model ExamAttempt {
+  id        String            @id @default(cuid())
+  userId    String
+  examId    String
+  status    ExamAttemptStatus @default(IN_PROGRESS)
+  result    Float?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+enum ExamAttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model Challenge {
+  id         String          @id @default(cuid())
+  senderId   String
+  receiverId String
+  examId     String
+  status     ChallengeStatus @default(PENDING)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  sender   User    @relation("ChallengeSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User    @relation("ChallengeReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  exam     Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  User     User?   @relation(fields: [userId], references: [id])
+  userId   String?
+}
+
+enum ChallengeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
