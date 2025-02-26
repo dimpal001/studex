@@ -132,6 +132,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
                   itemBuilder: (context, index) {
                     final subject = subjectList[index];
                     return SubjectCard(
+                      id: subject.id,
                       name: subject.name,
                       chapters: 20,
                       topics: 20,

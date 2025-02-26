@@ -5,6 +5,7 @@ import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/bottom_nav_bar.dart';
 import 'package:my_flutter_app/constants/encryption.dart';
 import 'package:my_flutter_app/screens/notification/notification_screen.dart';
+import 'package:my_flutter_app/screens/profile/profile_screen.dart';
 import 'package:my_flutter_app/screens/query/query_screen.dart';
 import 'package:my_flutter_app/screens/subject/subject.dart';
 import 'package:my_flutter_app/screens/subject/subject_screen.dart';
@@ -51,10 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final userId = prefs.getString('userId');
-
-    if (userId == null || userId.isEmpty) {
-      return;
-    }
+    if (userId == null || userId.isEmpty) return;
 
     final encryptedData =
         Uri.encodeComponent(Encryption.encryptData({"userId": userId}));
@@ -66,20 +64,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       final responseData = json.decode(response.body);
-
       if (response.statusCode == 200) {
         final decryptedResponse =
             Encryption.decryptData(responseData["resData"]);
-
         if (decryptedResponse == null ||
             !decryptedResponse.containsKey("subjects") ||
-            decryptedResponse["subjects"] == null) {
-          return;
-        }
+            decryptedResponse["subjects"] == null) return;
 
         final subjectsData = decryptedResponse["subjects"];
-
-        // Store subjects in SharedPreferences
         await prefs.setString('subjectsList', json.encode(subjectsData));
 
         setState(() {
@@ -88,290 +80,240 @@ class _HomeScreenState extends State<HomeScreen> {
                   Subject.fromJson(subject as Map<String, dynamic>))
               .toList();
         });
-
-        print('Subjects successfully fetched and stored in SharedPreferences');
+        print('Subjects successfully fetched and stored');
       } else {
         print('Failed to fetch subjects: ${response.statusCode}');
       }
     } catch (e, stackTrace) {
-      print('Error fetching subjects: $e');
-      print(stackTrace);
+      print('Error fetching subjects: $e\n$stackTrace');
     }
   }
-
-  final List<Map<String, String>> statuses = [
-    {'title': 'Active Status', 'avatar': 'A'},
-    {'title': 'Pending Request', 'avatar': 'P'},
-    {'title': 'Completed Task', 'avatar': 'C'},
-    {'title': 'New Alert', 'avatar': 'N'},
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: HomeScreenContent(),
+      body: HomeScreenContent(fullName: fullName, subjects: subjectList),
       bottomNavigationBar: BottomNavBar(selectedIndex: _selectedIndex),
-    );
-  }
-
-  IconData getSubjectIcon(int index) {
-    switch (index) {
-      case 0:
-        return Icons.science;
-      case 1:
-        return Icons.book;
-      case 2:
-        return Icons.calculate;
-      case 3:
-        return Icons.language;
-      case 4:
-        return Icons.flag;
-      default:
-        return Icons.help;
-    }
-  }
-
-  String getSubjectName(int index) {
-    switch (index) {
-      case 0:
-        return "Science";
-      case 1:
-        return "Chemistry";
-      case 2:
-        return "Mathematics";
-      case 3:
-        return "English";
-      case 4:
-        return "Assamese";
-      default:
-        return "Unknown";
-    }
-  }
-
-  Widget subjectIcon(IconData icon, String name) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: const Color(0xFF222252),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 30,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(name),
-      ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => QueryScreen()));
+        },
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Ask a Question',
+      ),
     );
   }
 }
 
 class HomeScreenContent extends StatelessWidget {
+  final String fullName;
+  final List<Subject> subjects;
+
+  const HomeScreenContent({required this.fullName, required this.subjects});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Dimpal Das",
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+      appBar: AppBar(
+        title: Text(
+          "Studex",
+          style: TextStyle(
+            fontSize: 30,
+            color: AppColors.primary,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
           ),
-          automaticallyImplyLeading: false,
-          backgroundColor: AppColors.foreground,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.notifications_outlined),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => NotificationScreen()));
-              },
-            ),
-            Padding(
-              padding: EdgeInsets.only(right: 10, left: 5),
-              child: CircleAvatar(
-                // backgroundImage: AssetImage('assets/profile.jpg'),
-                radius: 17,
-              ),
-            ),
-          ],
         ),
-        body: Padding(
-          padding: EdgeInsets.all(13),
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.foreground,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, size: 28),
+            color: Colors.white70,
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => NotificationScreen()));
+            },
+          ),
+          Padding(
+              padding: const EdgeInsets.only(right: 12, left: 8),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen()));
+                },
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    fullName[0].toUpperCase(),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              )),
+        ],
+      ),
+      body: Container(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 5),
+                // Welcome Banner
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome, $fullName!',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Explore your subjects and ask questions!',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.school,
+                          color: AppColors.primary, size: 40),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Search Bar
                 GestureDetector(
-                  onTap: () {
-                    print('Search');
-                  },
+                  onTap: () => print('Search tapped'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    height: 50.0,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF292935),
-                      borderRadius: BorderRadius.circular(8.0),
+                      color: AppColors.foreground,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: const [
                         Icon(Icons.search, color: Colors.grey),
-                        SizedBox(width: 8.0),
+                        SizedBox(width: 12),
                         Text(
                           'Search question...',
-                          style: TextStyle(color: Colors.grey, fontSize: 16.0),
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 13),
+                const SizedBox(height: 20),
+
+                // Quick Actions
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => QueryScreen()));
-                      },
-                      child: Card(
-                        color: Color(0xFF292935),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Container(
-                          width: 170,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 0, vertical: 22),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 25.0,
-                                backgroundColor: const Color(0xFF463132),
-                                child: Icon(
-                                  Icons.question_answer,
-                                  color: Color(0xFFF0363F),
-                                  size: 25,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Ask Question',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    _buildQuickActionCard(
+                      context,
+                      title: 'Ask Question',
+                      icon: Icons.question_answer,
+                      route: QueryScreen(),
+                      color: const Color(0xFF463132),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SubjectScreen()));
-                      },
-                      child: Card(
-                        color: Color(0xFF292935),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Container(
-                          width: 170,
-                          padding: EdgeInsets.all(22),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 25.0,
-                                backgroundColor: const Color(0xFF463132),
-                                child: Icon(
-                                  Icons.menu_book,
-                                  color: Color(0xFFF0363F),
-                                  size: 25,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'My Subjects',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    _buildQuickActionCard(
+                      context,
+                      title: 'My Subjects',
+                      icon: Icons.menu_book,
+                      route: SubjectScreen(),
+                      color: const Color(0xFF323146),
                     ),
                   ],
                 ),
-                const SizedBox(height: 13),
-                Column(
-                  children: [
-                    Text(
-                      'Recent Questions',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 20),
+
+                // Recent Questions
+                Text(
+                  'Recent Questions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 ListView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: 5,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Card(
-                        color: Color(0xFF292935),
+                        color: AppColors.foreground.withOpacity(0.9),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Container(
-                          padding: const EdgeInsets.all(20.0),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
                           child: Row(
                             children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColors.primary,
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Sample Question ${index + 1}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white70,
-                                        fontSize: 18,
+                                        color: Colors.white,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                    SizedBox(height: 5),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      'Mathematics - Chapter 2',
+                                      'Mathematics - Chapter ${index + 1}',
                                       style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 14,
+                                        color: Colors.grey[400],
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Text(
-                                  '${index + 1} hr ago',
-                                  style: TextStyle(
-                                    color: const Color(0xFFF0363F),
-                                    fontSize: 12,
-                                  ),
+                              Text(
+                                '${index + 1} hr ago',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
@@ -381,10 +323,55 @@ class HomeScreenContent extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 80),
               ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget route,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => route));
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Card(
+        color: AppColors.foreground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          width: 160,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: color,
+                child: Icon(icon, color: AppColors.primary, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

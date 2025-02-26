@@ -6,13 +6,7 @@ const { decryptData, encryptData } = require('../utils')
 const prisma = new PrismaClient()
 
 const signUp = async (request, response) => {
-  const decryptedData = decryptData(request.body.data)
-
-  if (!decryptedData) {
-    return response.status(400).json({ message: 'Data format is invalid' })
-  }
-
-  const { phoneNumber } = decryptedData
+  const { phoneNumber } = request.body.data
 
   const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID
   const ACCESS_TOKEN = process.env.ACCESS_TOKEN
@@ -81,7 +75,7 @@ const signUp = async (request, response) => {
       },
     })
 
-    const resData = encryptData({ message: 'OTP sent successfully' })
+    const resData = { message: 'OTP sent successfully' }
 
     response.status(201).json({ resData })
   } catch (error) {
@@ -93,14 +87,7 @@ const signUp = async (request, response) => {
 }
 
 const verifyOtp = async (request, response) => {
-  const { data } = request.body
-  const decryptedData = decryptData(data)
-
-  if (!decryptedData) {
-    return response.status(400).json({ message: 'Data format is invalid' })
-  }
-
-  const { otp, phoneNumber } = decryptedData
+  const { otp, phoneNumber } = request.body.data
 
   try {
     const otpRecord = await prisma.otp.findFirst({
@@ -132,9 +119,9 @@ const verifyOtp = async (request, response) => {
       where: { id: otpRecord.id },
     })
 
-    const resData = encryptData({ message: 'OTP verified successfully' })
+    const resData = { message: 'OTP verified successfully' }
 
-    return response.status(201).json({ resData })
+    return response.status(200).json({ resData })
   } catch (error) {
     console.log(error)
     return response.status(500).json({
@@ -144,17 +131,10 @@ const verifyOtp = async (request, response) => {
 }
 
 const createUser = async (request, response) => {
-  const { data } = request.body
-  const decryptedData = decryptData(data)
-
-  if (!decryptedData) {
-    return response.status(400).json({ message: 'Data format is invalid' })
-  }
-
-  const { phoneNumber, password, deviceId } = decryptedData
+  const { phoneNumber, password } = request.body.data
 
   try {
-    if (!phoneNumber || !password || !deviceId) {
+    if (!phoneNumber || !password) {
       return response
         .status(400)
         .json({ error: 'Phone number and password are required' })
@@ -182,27 +162,10 @@ const createUser = async (request, response) => {
       },
     })
 
-    const token = jwt.sign(
-      { userId: user.id, phoneNumber, deviceId },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: '30d',
-      }
-    )
-
-    await prisma.session.create({
-      data: {
-        userId: user.id,
-        token,
-        deviceId,
-      },
-    })
-
-    const resData = encryptData({
+    const resData = {
       message: 'You have successfully registered!',
-      token,
-      userId: user.id,
-    })
+      user,
+    }
 
     return response.status(201).json({ resData })
   } catch (error) {
@@ -211,24 +174,81 @@ const createUser = async (request, response) => {
   }
 }
 
-const login = async (request, response) => {
-  const { data } = request.body
-  const decryptedData = decryptData(data)
-
-  if (!decryptedData) {
-    return response.status(400).json({ message: 'Data format is invalid' })
-  }
-
-  const { phoneNumber, password, deviceId, fcmToken } = decryptedData
+const updateUserData = async (request, response) => {
+  const { id, fullName, classId, subjects } = request.body.data
 
   try {
-    if (!phoneNumber || !password || !deviceId) {
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        fullName,
+        classId,
+      },
+      include: {
+        class: true,
+        subjects: {
+          include: {
+            subject: true,
+          },
+        },
+      },
+    })
+
+    if (subjects && subjects.length > 0) {
+      await prisma.userSubject.deleteMany({ where: { userId: id } })
+
+      await prisma.userSubject.createMany({
+        data: subjects.map((subjectId) => ({ userId: id, subjectId })),
+      })
+    }
+
+    const classData = await prisma.class.findUnique({
+      where: { id: classId },
+    })
+
+    const subjectData = await prisma.userSubject.findMany({
+      where: { userId: id },
+      include: { subject: true },
+    })
+
+    const token = jwt.sign(
+      { userId: updatedUser.id, phoneNumber: updatedUser.phoneNumber },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '30d',
+      }
+    )
+
+    await prisma.session.create({
+      data: {
+        userId: updatedUser.id,
+        token,
+      },
+    })
+
+    const resData = { classData, subjectData, updatedUser, token }
+
+    return response.status(200).json({ resData })
+  } catch (error) {
+    console.error(error)
+    return response.status(500).json({ error: 'Update failed' })
+  }
+}
+
+const login = async (request, response) => {
+  const { phoneNumber, password, fcmToken } = request.body.data
+
+  try {
+    if (!phoneNumber || !password) {
       return response.status(400).json({
         error: 'Phone number, password, and device ID are required',
       })
     }
 
-    const user = await prisma.user.findUnique({ where: { phoneNumber } })
+    const user = await prisma.user.findUnique({
+      where: { phoneNumber },
+      include: { class: true },
+    })
     if (!user) {
       return response.status(400).json({ error: 'User not found' })
     }
@@ -247,17 +267,8 @@ const login = async (request, response) => {
       data: { fcmToken },
     })
 
-    if (existingSession) {
-      if (existingSession.deviceId !== deviceId) {
-        return response.status(403).json({
-          error: 'You are already logged in on another device',
-        })
-      }
-      await prisma.session.deleteMany({ where: { userId: user.id } })
-    }
-
     const token = jwt.sign(
-      { userId: user.id, phoneNumber, deviceId },
+      { userId: user.id, phoneNumber },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     )
@@ -266,11 +277,10 @@ const login = async (request, response) => {
       data: {
         userId: user.id,
         token,
-        deviceId,
       },
     })
 
-    const resData = encryptData({ message: 'Login successful', user, token })
+    const resData = { message: 'Login successful', user, token }
 
     return response.status(200).json({ resData })
   } catch (error) {
@@ -280,17 +290,10 @@ const login = async (request, response) => {
 }
 
 const forceLogin = async (request, response) => {
-  const { data } = request.body
-  const decryptedData = decryptData(data)
-
-  if (!decryptedData) {
-    return response.status(400).json({ message: 'Data format is invalid' })
-  }
-
-  const { phoneNumber, password, deviceId } = decryptedData
+  const { phoneNumber, password } = request.body.data
 
   try {
-    if (!phoneNumber || !password || !deviceId) {
+    if (!phoneNumber || !password) {
       return response.status(400).json({
         error: 'Phone number and password are required',
       })
@@ -318,21 +321,27 @@ const forceLogin = async (request, response) => {
       data: {
         userId: user.id,
         token,
-        deviceId,
       },
     })
 
-    const resData = encryptData({
+    const resData = {
       message: 'Login successful, previous device logged out',
       user,
       token,
-    })
+    }
 
-    return response.status(201).json({ resData })
+    return response.status(200).json({ resData })
   } catch (error) {
     console.error(error)
     return response.status(500).json({ error: 'Login failed' })
   }
 }
 
-module.exports = { signUp, verifyOtp, createUser, login, forceLogin }
+module.exports = {
+  signUp,
+  verifyOtp,
+  createUser,
+  login,
+  forceLogin,
+  updateUserData,
+}

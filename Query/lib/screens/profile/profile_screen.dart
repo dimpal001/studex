@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/app_color.dart';
-import 'package:my_flutter_app/constants/bottom_nav_bar.dart';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
 import 'package:my_flutter_app/screens/plans/plan_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String fullName = 'John Doe';
   bool isDarkMode = true;
   bool notificationsEnabled = true;
+  final String appVersion = '1.0.0';
+  String selectedClass = '10th';
+  String selectedLanguage = 'English';
+  List<String> selectedSubjects = ['Math', 'Science'];
 
   @override
   void initState() {
@@ -27,14 +30,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       fullName = prefs.getString('fullName') ?? 'John Doe';
+      selectedClass = prefs.getString('selectedClass') ?? '10th';
+      selectedLanguage = prefs.getString('selectedLanguage') ?? 'English';
+      selectedSubjects =
+          prefs.getStringList('selectedSubjects') ?? ['Math', 'Science'];
     });
+  }
+
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedClass', selectedClass);
+    await prefs.setString('selectedLanguage', selectedLanguage);
+    await prefs.setStringList('selectedSubjects', selectedSubjects);
   }
 
   Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-
     await prefs.clear();
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -45,20 +57,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withOpacity(0.7),
       builder: (BuildContext context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Color(0xFF171720),
-          title: const Text("Confirm Logout"),
-          content: const Text("Are you sure you want to logout?"),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor: AppColors.foreground,
+          title: const Text("Confirm Logout",
+              style: TextStyle(color: Colors.white)),
+          content: const Text("Are you sure you want to log out?",
+              style: TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Cancel"),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel",
+                  style: TextStyle(color: AppColors.primary)),
             ),
             TextButton(
               onPressed: () {
@@ -72,163 +85,345 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showAcademicOptions(BuildContext context, String type) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.foreground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select ${type}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (type == 'Class') _buildClassOptions(),
+              if (type == 'Subjects') _buildSubjectsOptions(),
+              if (type == 'Language') _buildLanguageOptions(),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    _saveData();
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClassOptions() {
+    final List<String> classes = ['8th', '9th', '10th', '11th', '12th'];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: classes.map((className) {
+        final isSelected = selectedClass == className;
+        return ChoiceChip(
+          label: Text(className),
+          selected: isSelected,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() => selectedClass = className);
+            }
+          },
+          selectedColor: AppColors.primary,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+          ),
+          backgroundColor: Colors.grey.withOpacity(0.2),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildSubjectsOptions() {
+    final List<String> availableSubjects = [
+      'Math',
+      'Science',
+      'English',
+      'History',
+      'Geography',
+      'Physics',
+      'Chemistry'
+    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: availableSubjects.map((subject) {
+        final isSelected = selectedSubjects.contains(subject);
+        return ChoiceChip(
+          label: Text(subject),
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() {
+              if (selected) {
+                selectedSubjects.add(subject);
+              } else {
+                selectedSubjects.remove(subject);
+              }
+            });
+          },
+          selectedColor: AppColors.primary,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+          ),
+          backgroundColor: Colors.grey.withOpacity(0.2),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildLanguageOptions() {
+    final List<String> languages = ['English', 'Hindi', 'Assamese', 'Bangali'];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: languages.map((language) {
+        final isSelected = selectedLanguage == language;
+        return ChoiceChip(
+          label: Text(language),
+          selected: isSelected,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() => selectedLanguage = language);
+            }
+          },
+          selectedColor: AppColors.primary,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+          ),
+          backgroundColor: Colors.grey.withOpacity(0.2),
+        );
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Profile",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        // centerTitle: true,
-        automaticallyImplyLeading: false,
         backgroundColor: AppColors.foreground,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined),
-            onPressed: () {
-              //
-            },
-          ),
+              icon: const Icon(Icons.settings_outlined, size: 28),
+              color: Colors.white70,
+              onPressed: () {}),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF292935),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 32,
-                    backgroundImage:
-                        NetworkImage('https://via.placeholder.com/150'),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        fullName,
+      body: Container(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.foreground,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: AppColors.primary,
+                      child: Text(
+                        fullName[0].toUpperCase(),
                         style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                            fontSize: 32,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 4),
-                      const Text('Class 10 - CBSE',
-                          style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            fullName,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.school,
+                                  color: Colors.grey, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Class $selectedClass',
+                                style: TextStyle(
+                                    color: Colors.grey[400], fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            _buildPremiumButton(context),
-            const SizedBox(height: 24),
-
-            // Academic Settings
-            const Text("Academic Settings",
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-            const SizedBox(height: 12),
-            _buildSettingsCard([
-              _buildSettingItem("Change Board", "CBSE"),
-              _buildSettingItem("Change Class", "10th"),
-              _buildSettingItem("Manage Subjects", null, hasArrow: true),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // App Settings
-            const Text("App Settings",
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-            const SizedBox(height: 12),
-            _buildSettingsCard([
-              _buildToggleItem("Dark Mode", isDarkMode, (value) {
-                setState(() {
-                  isDarkMode = value;
-                });
-              }),
-              _buildToggleItem("Notifications", notificationsEnabled, (value) {
-                setState(() {
-                  notificationsEnabled = value;
-                });
-              }),
-              _buildSettingItem("Language", "English"),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // Account Settings
-            const Text("Account",
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-            const SizedBox(height: 12),
-            _buildSettingsCard([
-              _buildSettingItem("Privacy Policy", null, hasArrow: true),
-              _buildSettingItem("Terms of Service", null, hasArrow: true),
-            ]),
-
-            const SizedBox(height: 20),
-            _buildSettingsCard([
-              _buildSettingItem("Logout", null,
-                  hasArrow: false,
-                  isDanger: true,
-                  onTap: () => _showLogoutConfirmation(context)),
-            ]),
-          ],
+              const SizedBox(height: 24),
+              _buildPremiumButton(context),
+              const SizedBox(height: 24),
+              const Text("Academic Settings",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
+              const SizedBox(height: 12),
+              _buildSettingsCard([
+                _buildSettingItem(
+                  "Change Class",
+                  selectedClass,
+                  icon: Icons.class_,
+                  hasArrow: true,
+                  onTap: () => _showAcademicOptions(context, 'Class'),
+                ),
+                _buildSettingItem(
+                  "Manage Subjects",
+                  selectedSubjects.join(', '),
+                  icon: Icons.subject,
+                  hasArrow: true,
+                  onTap: () => _showAcademicOptions(context, 'Subjects'),
+                ),
+                _buildSettingItem(
+                  "Prefered Language",
+                  selectedLanguage,
+                  icon: Icons.language,
+                  hasArrow: true,
+                  onTap: () => _showAcademicOptions(context, 'Language'),
+                ),
+              ]),
+              const SizedBox(height: 24),
+              const Text("App Settings",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
+              const SizedBox(height: 12),
+              _buildSettingsCard([
+                _buildToggleItem("Dark Mode", isDarkMode,
+                    (value) => setState(() => isDarkMode = value),
+                    icon: Icons.dark_mode),
+                _buildToggleItem("Notifications", notificationsEnabled,
+                    (value) => setState(() => notificationsEnabled = value),
+                    icon: Icons.notifications),
+              ]),
+              const SizedBox(height: 24),
+              const Text("Account",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
+              const SizedBox(height: 12),
+              _buildSettingsCard([
+                _buildSettingItem("Privacy Policy", null,
+                    icon: Icons.lock_outline, hasArrow: true),
+                _buildSettingItem("Terms of Service", null,
+                    icon: Icons.description, hasArrow: true),
+              ]),
+              const SizedBox(height: 24),
+              _buildLogoutButton(context),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  'App Version: $appVersion',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(selectedIndex: 3),
     );
   }
 
   Widget _buildSettingsCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF292935),
-        borderRadius: BorderRadius.circular(10),
+        color: AppColors.foreground.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
   }
 
   Widget _buildSettingItem(String title, String? value,
-      {bool hasArrow = false, bool isDanger = false, VoidCallback? onTap}) {
+      {required IconData icon, bool hasArrow = false, VoidCallback? onTap}) {
     return Material(
-      color: isDanger ? Colors.red : Colors.transparent,
-      shape: isDanger
-          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-          : null,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: Color(0xFF1E1E2A),
-        highlightColor: Color(0xFF1E1E2A),
-        borderRadius: BorderRadius.circular(8),
+        splashColor: Colors.white.withOpacity(0.1),
+        highlightColor: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
         child: ListTile(
-          title: Text(title, style: const TextStyle(color: Colors.white)),
+          leading: Icon(icon, color: Colors.white70, size: 24),
+          title: Text(title,
+              style: const TextStyle(color: Colors.white, fontSize: 16)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (value != null)
-                Text(value,
-                    style: const TextStyle(
-                        color: AppColors.primary, fontWeight: FontWeight.bold)),
+                Text(
+                  value,
+                  style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
+                ),
               if (hasArrow)
                 const Icon(Icons.arrow_forward_ios,
                     color: Colors.grey, size: 16),
@@ -239,45 +434,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildToggleItem(String title, bool value, Function(bool) onChanged) {
+  Widget _buildToggleItem(String title, bool value, Function(bool) onChanged,
+      {required IconData icon}) {
     return ListTile(
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      leading: Icon(icon, color: Colors.white70, size: 24),
+      title: Text(title,
+          style: const TextStyle(color: Colors.white, fontSize: 16)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeTrackColor: AppColors.primary,
+        activeTrackColor: AppColors.primary.withOpacity(0.8),
         activeColor: AppColors.white,
+        inactiveThumbColor: Colors.grey,
+        inactiveTrackColor: Colors.grey.withOpacity(0.5),
       ),
     );
   }
 
   Widget _buildPremiumButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.amber,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => PlansScreen()));
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.star, color: Colors.black, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Go to Premium Plans",
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PlansScreen()),
-            );
-          },
-          child: const Text(
-            "Go to Premium Plans",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.red, width: 2),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          backgroundColor: Colors.red.withOpacity(0.1),
+        ),
+        onPressed: () => _showLogoutConfirmation(context),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.logout, color: Colors.red, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Log Out",
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/constants/app_color.dart';
 
 class ErrorComponent extends StatelessWidget {
   final String message;
@@ -19,7 +20,7 @@ class ErrorComponent extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, color: Color(0xFFF0363F), size: 50),
+            Icon(Icons.error_outline, color: AppColors.primary, size: 50),
             const SizedBox(height: 10),
             Text(
               message,
@@ -30,7 +31,7 @@ class ErrorComponent extends StatelessWidget {
             ElevatedButton(
               onPressed: onReload,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF0363F),
+                backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -39,7 +40,7 @@ class ErrorComponent extends StatelessWidget {
               ),
               child: Text(
                 "Reload",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ],

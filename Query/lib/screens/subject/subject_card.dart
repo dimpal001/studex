@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/app_color.dart';
+import 'package:my_flutter_app/screens/chapter/chapter_screen.dart';
 
 class SubjectCard extends StatelessWidget {
+  final String id;
   final String name;
   final int chapters;
   final int topics;
@@ -10,6 +12,7 @@ class SubjectCard extends StatelessWidget {
 
   const SubjectCard({
     Key? key,
+    required this.id,
     required this.name,
     required this.chapters,
     required this.topics,
@@ -34,47 +37,62 @@ class SubjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.foreground,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(getSubjectIcon(), color: Colors.red, size: 28),
-                SizedBox(width: 8),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white70,
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChapterScreen(
+              subjectId: id,
+              subjectName: name,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Card(
+        color: AppColors.foreground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(getSubjectIcon(), color: Colors.red, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white70,
+                    ),
                   ),
-                ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios, color: Colors.white60, size: 18),
-              ],
-            ),
-            SizedBox(height: 4),
-            Text(
-              "$chapters Chapters • $topics Topics",
-              style: TextStyle(color: Colors.white60, fontSize: 14),
-            ),
-            SizedBox(height: 12),
-            Row(
-              spacing: 12,
-              children: [
-                _infoBox("Progress", "$progress%"),
-                _infoBox("Questions", "$questions"),
-              ],
-            ),
-          ],
+                  Spacer(),
+                  Icon(Icons.arrow_forward_ios,
+                      color: Colors.white60, size: 18),
+                ],
+              ),
+              SizedBox(height: 4),
+              Text(
+                "$chapters Chapters • $topics Topics",
+                style: TextStyle(color: Colors.white60, fontSize: 14),
+              ),
+              SizedBox(height: 12),
+              Row(
+                spacing: 12,
+                children: [
+                  _infoBox("Progress", "$progress%"),
+                  _infoBox("Questions", "$questions"),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

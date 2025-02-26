@@ -39,7 +39,7 @@ class _QueryScreenState extends State<QueryScreen> {
     "English",
     "Hindi",
     "Assamese",
-    "Bangali"
+    "Bengali"
   ];
   final ImagePicker _picker = ImagePicker();
 
@@ -56,16 +56,29 @@ class _QueryScreenState extends State<QueryScreen> {
       BuildContext context, List<String> options, Function(String) onSelect) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(color: Color(0xFF171720)),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.foreground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)
+            ],
+          ),
           child: ListView(
             shrinkWrap: true,
             children: options.map((option) {
               return ListTile(
-                title:
-                    Text(option, style: const TextStyle(color: Colors.white)),
+                title: Text(option,
+                    style: const TextStyle(color: Colors.white, fontSize: 16)),
+                trailing: Icon(Icons.check,
+                    color: _selectedSubject == option ||
+                            _selectedMarks == option ||
+                            _selectedLanguage == option
+                        ? AppColors.primary
+                        : Colors.transparent),
                 onTap: () {
                   onSelect(option);
                   Navigator.pop(context);
@@ -92,12 +105,19 @@ class _QueryScreenState extends State<QueryScreen> {
     final marks = _selectedMarks;
     final language = _selectedLanguage;
 
+    if (question.isEmpty ||
+        subjectData == null ||
+        marks == null ||
+        language == null) {
+      Alert.show(context, "Please fill all fields", type: SnackbarType.error);
+      return;
+    }
+
     setState(() {
       _isAsking = true;
     });
 
     final url = Uri.parse('$baseUrl/question/ask');
-
     final encryptedData = Encryption.encryptData({
       "userId": userId,
       "question": question,
@@ -120,28 +140,27 @@ class _QueryScreenState extends State<QueryScreen> {
       if (response.statusCode == 200) {
         final decryptedResponse =
             Encryption.decryptData(responseData["resData"]);
-
         final question = decryptedResponse["question"];
         final answer = decryptedResponse["answer"];
 
         demoData.insert(0, {
           "question": question,
-          "subject": "Computer Science",
-          "time": "2h ago",
-          "answer": answer
+          "subject": subjectData!,
+          "time": "Just now",
+          "answer": answer,
         });
 
         _questionController.clear();
         setState(() {
           _selectedImage = null;
         });
+        Alert.show(context, "Question submitted successfully!",
+            type: SnackbarType.success);
       } else {
         final errorMessage = responseData["error"] ?? "Unable to fetch data";
-        print("Error Message: $errorMessage");
         Alert.show(context, errorMessage, type: SnackbarType.error);
       }
     } catch (error) {
-      print("Error: ${error.toString()}");
       Alert.show(context, "Error connecting to server",
           type: SnackbarType.error);
     } finally {
@@ -155,231 +174,262 @@ class _QueryScreenState extends State<QueryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "AskMe",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        title: const Text(
+          "Studex",
+          style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary),
         ),
-        // centerTitle: true,
         automaticallyImplyLeading: false,
         backgroundColor: AppColors.foreground,
         actions: [
           IconButton(
-            icon: Icon(Icons.more_vert),
+            icon: const Icon(Icons.history, color: Colors.white70),
             onPressed: () {
-              //
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Question history coming soon!")),
+              );
             },
+            tooltip: 'View History',
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white70),
+            onPressed: () {},
+            tooltip: 'More Options',
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 7,
-        ),
+      body: Container(
         child: Column(
           children: [
-            SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF292935),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 90,
-                        height: 35,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _showDropdown(context, _subjects, (value) {
-                            setState(() => _selectedSubject = value);
-                          }),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E1E2A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            _selectedSubject ?? "Subject",
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 7),
-                      SizedBox(
-                        width: 80,
-                        height: 35,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _showDropdown(context, _marksOptions, (value) {
-                            setState(() => _selectedMarks = value);
-                          }),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E1E2A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            _selectedMarks ?? "Marks",
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 7),
-                      SizedBox(
-                        width: 90,
-                        height: 35,
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              _showDropdown(context, _languageOptions, (value) {
-                            setState(() => _selectedLanguage = value);
-                          }),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E1E2A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.foreground.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildDropdownButton(
+                            "Subject",
+                            _selectedSubject,
+                            _subjects,
+                            (value) =>
+                                setState(() => _selectedSubject = value)),
+                        _buildDropdownButton(
+                            "Marks",
+                            _selectedMarks,
+                            _marksOptions,
+                            (value) => setState(() => _selectedMarks = value)),
+                        _buildDropdownButton(
+                            "Language",
                             _selectedLanguage ?? "English",
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _questionController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: "Type your question here...",
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: const Color(0xFF1E1E2A),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
+                            _languageOptions,
+                            (value) =>
+                                setState(() => _selectedLanguage = value)),
+                      ],
                     ),
-                    minLines: 3, // Minimum height (3 lines)
-                    maxLines: 6, // Maximum height (6 lines)
-                    keyboardType: TextInputType.multiline,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: () => _pickImage(ImageSource.camera),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF463132),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.camera_alt_outlined,
-                              color: Color(0xFFF0363F), size: 18),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _questionController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: "Type your question here...",
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
+                        suffixIcon: _questionController.text.isNotEmpty
+                            ? IconButton(
+                                icon:
+                                    const Icon(Icons.clear, color: Colors.grey),
+                                onPressed: () => _questionController.clear(),
+                              )
+                            : null,
                       ),
-                      const SizedBox(width: 10),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: () => _pickImage(ImageSource.gallery),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF463132),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.image_outlined,
-                              color: Color(0xFFF0363F), size: 18),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      if (_selectedImage != null)
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedImage = null;
-                            });
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              File(_selectedImage!.path),
-                              width: 30,
-                              height: 30,
-                              fit: BoxFit.cover,
+                      minLines: 3,
+                      maxLines: 6,
+                      keyboardType: TextInputType.multiline,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildActionButton(Icons.camera_alt_outlined,
+                            () => _pickImage(ImageSource.camera), 'Camera'),
+                        const SizedBox(width: 12),
+                        _buildActionButton(Icons.image_outlined,
+                            () => _pickImage(ImageSource.gallery), 'Gallery'),
+                        const SizedBox(width: 12),
+                        if (_selectedImage != null)
+                          GestureDetector(
+                            onTap: () => setState(() => _selectedImage = null),
+                            child: Stack(
+                              alignment: Alignment.topRight,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    File(_selectedImage!.path),
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close,
+                                      size: 16, color: Colors.white),
+                                ),
+                              ],
                             ),
                           ),
+                        const Spacer(),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: _isAsking
+                              ? const CupertinoActivityIndicator(
+                                  color: AppColors.primary, radius: 12)
+                              : ElevatedButton(
+                                  onPressed: _askQuestion,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 12),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text("Ask",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold)),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.arrow_forward,
+                                          color: Colors.white, size: 18),
+                                    ],
+                                  ),
+                                ),
                         ),
-                      const Spacer(),
-                      _isAsking
-                          ? Padding(
-                              padding: EdgeInsets.only(right: 7),
-                              child: const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CupertinoActivityIndicator(
-                                  color: Color(0xFFF0363F),
-                                  radius: 12,
-                                ),
-                              ),
-                            )
-                          : InkWell(
-                              borderRadius: BorderRadius.circular(10),
-                              onTap: _isAsking ? null : _askQuestion,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF463132),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.arrow_forward,
-                                    color: Color(0xFFF0363F), size: 18),
-                              ),
-                            ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   child: Column(
-                    children: demoData.map((data) {
-                      return QuestionCard(
-                        question: data["question"]!,
-                        subject: data["subject"]!,
-                        time: data["time"]!,
-                        answer: data["answer"]!,
-                      );
-                    }).toList(), // Fixed map function
+                    children: [
+                      if (demoData.isEmpty)
+                        const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.question_answer,
+                                  size: 60, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text(
+                                'No Questions Yet',
+                                style:
+                                    TextStyle(fontSize: 18, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        ...demoData.map((data) {
+                          return QuestionCard(
+                            question: data["question"]!,
+                            subject: data["subject"]!,
+                            time: data["time"]!,
+                            answer: data["answer"]!,
+                          );
+                        }).toList(),
+                    ],
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavBar(selectedIndex: 1),
+    );
+  }
+
+  Widget _buildDropdownButton(String label, String? value, List<String> options,
+      Function(String) onSelect) {
+    return SizedBox(
+      width: 103,
+      child: GestureDetector(
+        onTap: () => _showDropdown(context, options, onSelect),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  value ?? label,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      overflow: TextOverflow.ellipsis),
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, VoidCallback onTap, String tooltip) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
+        ),
+      ),
     );
   }
 }

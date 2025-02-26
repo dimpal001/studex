@@ -33,7 +33,7 @@ class PlansScreen extends StatelessWidget {
                       "No Priority Support",
                       "No AI Enhancements"
                     ],
-                    color: Color(0xFF292935),
+                    color: AppColors.foreground,
                     onTap: () => _subscribeToPlan(context, "Free Plan"),
                     isHideButton: true),
                 _buildPlanCard(
@@ -44,7 +44,7 @@ class PlansScreen extends StatelessWidget {
                       "Faster Responses",
                       "No AI Enhancements"
                     ],
-                    color: Color(0xFF292935),
+                    color: AppColors.foreground,
                     onTap: () => _subscribeToPlan(context, "Standard Plan"),
                     isSolidButton: true),
                 _buildPlanCard(
@@ -55,7 +55,7 @@ class PlansScreen extends StatelessWidget {
                     "Fastest AI Responses",
                     "Priority Support"
                   ],
-                  color: Color(0xFF292935),
+                  color: AppColors.foreground,
                   onTap: () => _subscribeToPlan(context, "Premium Plan"),
                 ),
               ],
@@ -79,7 +79,8 @@ class PlansScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Color(0xFF292935)),
+            borderRadius: BorderRadius.circular(10),
+            color: AppColors.foreground),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

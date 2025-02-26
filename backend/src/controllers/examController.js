@@ -90,6 +90,174 @@ const createExam = async (request, response) => {
   }
 }
 
+const fetchUpcomingExams = async (request, response) => {
+  try {
+    const { userId } = await request.query
+    if (!userId) {
+      return response.status(400).json({ message: 'Missing user data' })
+    }
+
+    const exams = await prisma.exam.findMany({
+      where: {
+        userId,
+        isAttempt: false,
+      },
+      include: {
+        subject: true,
+      },
+    })
+
+    const formattedExams = exams.map((exam) => ({
+      id: exam.id,
+      userId: exam.userId,
+      name: exam.name,
+      subject: exam.subject.name,
+      topic: exam.topic,
+      isAttempt: exam.isAttempt,
+      duration: exam.duration,
+      noOfQuestions: exam.noOfQuestions,
+      createdAt: exam.createdAt,
+    }))
+
+    console.log(formattedExams)
+
+    return response.status(200).json({ exams: formattedExams })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed fetching exams.',
+    })
+  }
+}
+
+const fetchPastExams = async (request, response) => {
+  try {
+    const { userId } = request.query
+
+    if (!userId) {
+      return response.status(400).json({ message: 'Missing user data' })
+    }
+
+    const exams = await prisma.exam.findMany({
+      where: {
+        userId,
+        isAttempt: true,
+      },
+      include: {
+        subject: true,
+        examAttempt: {
+          where: { userId },
+          select: {
+            result: true,
+          },
+        },
+      },
+    })
+
+    console.log(exams)
+
+    const formattedExams = exams.map((exam) => ({
+      id: exam.id,
+      userId: exam.userId,
+      name: exam.name,
+      subject: exam.subject.name,
+      topic: exam.topic,
+      isAttempt: exam.isAttempt,
+      duration: exam.duration,
+      noOfQuestions: exam.noOfQuestions,
+      createdAt: exam.createdAt,
+      result: exam.examAttempt.length > 0 ? exam.examAttempt[0].result : null,
+    }))
+
+    return response.status(200).json({ exams: formattedExams })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed fetching exams.',
+    })
+  }
+}
+
+const fetchSingleExam = async (request, response) => {
+  try {
+    const { examId } = await request.query
+    if (!examId) {
+      return response.status(400).json({ message: 'Missing user data' })
+    }
+
+    const exam = await prisma.exam.findUnique({
+      where: {
+        id: examId,
+      },
+      select: {
+        id: true,
+        name: true,
+        topic: true,
+        duration: true,
+        noOfQuestions: true,
+        createdAt: true,
+        user: {
+          select: {
+            fullName: true,
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return response.status(200).json({ exam })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed fetching exam.',
+    })
+  }
+}
+
+const fetchExamData = async (request, response) => {
+  try {
+    const { examId } = await request.query
+    if (!examId) {
+      return response.status(400).json({ message: 'Missing user data' })
+    }
+
+    const exam = await prisma.exam.findUnique({
+      where: {
+        id: examId,
+      },
+      select: {
+        id: true,
+        name: true,
+        topic: true,
+        duration: true,
+        noOfQuestions: true,
+        questions: true,
+        user: {
+          select: {
+            fullName: true,
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return response.status(200).json({ exam })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed fetching exam.',
+    })
+  }
+}
+
 const submitExamAttempt = async (req, res) => {
   const { userId, examId, answers } = req.body
 
@@ -307,6 +475,10 @@ const sendNotificationToUser = async (request, response) => {
 
 module.exports = {
   createExam,
+  fetchUpcomingExams,
+  fetchPastExams,
+  fetchSingleExam,
+  fetchExamData,
   submitExamAttempt,
   challengeUser,
   acceptChallenge,

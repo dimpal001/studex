@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class NotificationScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> notifications = [
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({Key? key}) : super(key: key);
+
+  @override
+  _NotificationScreenState createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  List<Map<String, dynamic>> notifications = [
     {
       'title': '🚫 Challenge Declined',
       'message':
           '😔 Abinash Das has declined your challenge. Try challenging someone else! 💪',
       'timestamp': DateTime.now().subtract(Duration(minutes: 1)),
-      'image': 'assets/avatars/avatar1.png', // Use a dummy image path
-      'read': false, // Added read field
+      'image': 'assets/avatars/avatar1.png',
+      'read': false,
     },
     {
       'title': '📝 New Exam Assigned!',
@@ -18,7 +25,7 @@ class NotificationScreen extends StatelessWidget {
           '📚 Your exam on Human Reproduction is now live! Start preparing! 🌟',
       'timestamp': DateTime.now().subtract(Duration(minutes: 5)),
       'image': 'assets/avatars/avatar2.png',
-      'read': true, // Added read field
+      'read': true,
     },
     {
       'title': '🏆 New Challenge!',
@@ -41,7 +48,7 @@ class NotificationScreen extends StatelessWidget {
       'message':
           '😔 Abinash Das has declined your challenge. Try challenging someone else! 💪',
       'timestamp': DateTime.now().subtract(Duration(minutes: 1)),
-      'image': 'assets/avatars/avatar1.png', // Use a dummy image path
+      'image': 'assets/avatars/avatar1.png',
       'read': true,
     },
     {
@@ -70,104 +77,243 @@ class NotificationScreen extends StatelessWidget {
     },
   ];
 
+  int get unreadCount => notifications.where((n) => !n['read']).length;
+
+  void markAsRead(int index) {
+    setState(() {
+      notifications[index]['read'] = true;
+    });
+  }
+
+  void markAllAsRead() {
+    setState(() {
+      for (var notification in notifications) {
+        notification['read'] = true;
+      }
+    });
+  }
+
+  void deleteAll() {
+    setState(() {
+      notifications.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Subjects",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+      appBar: AppBar(
+        title: const Text(
+          "Notifications",
+          style: TextStyle(
+              fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: AppColors.foreground,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'read_all') {
+                markAllAsRead();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('All notifications marked as read')),
+                );
+              } else if (value == 'delete_all') {
+                deleteAll();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('All notifications deleted')),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'read_all',
+                  child: ListTile(
+                    leading: const Icon(Icons.mark_email_read,
+                        color: Colors.white70),
+                    title: const Text("Mark All as Read",
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'delete_all',
+                  child: ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.white70),
+                    title: const Text("Delete All",
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ];
+            },
+            icon: const Icon(Icons.more_vert, color: Colors.white70),
           ),
-          backgroundColor: AppColors.foreground,
-          actions: [
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'read_all') {
-                  print('Read all notifications');
-                } else if (value == 'delete_all') {
-                  print('Delete all notifications');
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  PopupMenuItem<String>(
-                    value: 'read_all',
-                    child: ListTile(
-                      leading:
-                          Icon(Icons.mark_email_read, color: Colors.white54),
-                      title: Text("Read All"),
+        ],
+      ),
+      body: Container(
+        child: Column(
+          children: [
+            // Header with Unread Count
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.foreground.withOpacity(0.9),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Your Notifications',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: unreadCount > 0 ? AppColors.primary : Colors.grey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$unreadCount Unread',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
-                  PopupMenuItem<String>(
-                    value: 'delete_all',
-                    child: ListTile(
-                      leading: Icon(Icons.delete, color: Colors.white54),
-                      title: Text("Delete All"),
+                ],
+              ),
+            ),
+            Expanded(
+              child: notifications.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.notifications_off,
+                              size: 60, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'No Notifications Yet',
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = notifications[index];
+                        return Dismissible(
+                          key: Key(notification['timestamp'].toString()),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
+                          ),
+                          onDismissed: (direction) {
+                            setState(() {
+                              notifications.removeAt(index);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Notification dismissed')),
+                            );
+                          },
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            color: notification['read']
+                                ? AppColors.foreground.withOpacity(0.9)
+                                : AppColors.foreground.withOpacity(0.6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15)),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                radius: 28,
+                                backgroundImage: AssetImage(
+                                  notification['image'] ??
+                                      'assets/avatars/default.png',
+                                ),
+                                backgroundColor: AppColors.primary,
+                              ),
+                              title: Text(
+                                notification['title'] ?? '',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: notification['read']
+                                      ? Colors.white70
+                                      : Colors.white,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  notification['message'] ?? '',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: notification['read']
+                                        ? Colors.white54
+                                        : Colors.white70,
+                                  ),
+                                ),
+                              ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    timeago.format(notification['timestamp']),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: notification['read']
+                                          ? Colors.grey
+                                          : AppColors.primary,
+                                    ),
+                                  ),
+                                  if (!notification['read'])
+                                    GestureDetector(
+                                      onTap: () => markAsRead(index),
+                                      child: const Padding(
+                                        padding: EdgeInsets.only(top: 4),
+                                        child: Icon(Icons.mark_email_read,
+                                            size: 18, color: AppColors.primary),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          'Tapped: ${notification['title']}')),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ];
-              },
             ),
           ],
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: ListView.builder(
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index];
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                color: notification['read']
-                    ? AppColors.foreground
-                    : Colors.black12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 25,
-                    backgroundImage: AssetImage(
-                        notification['image'] ?? 'assets/avatars/default.png'),
-                  ),
-                  title: Text(
-                    notification['title'] ?? '',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  subtitle: Text(
-                    notification['message'] ?? '',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white54,
-                    ),
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        timeago.format(notification['timestamp']),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                  onTap: () {
-                    // Handle notification tap
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Tapped on notification')));
-                  },
-                ),
-              );
-            },
-          ),
-        ));
+      ),
+    );
   }
 }

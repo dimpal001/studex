@@ -24,7 +24,6 @@ model User {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   notifications     Notification[]
-  userInteraction   UserInteraction[]
   session           Session?
   subjects          UserSubject[]
   questions         Question[]
@@ -32,6 +31,8 @@ model User {
   exam              Exam[]
   challengeSent     Challenge[]       @relation("ChallengeSent")
   challengeReceived Challenge[]       @relation("ChallengeReceived")
+  followers         UserInteraction[] @relation(name: "UserFollower")
+  followings        UserInteraction[] @relation(name: "UserFollowing")
   examAttempt       ExamAttempt[]
   sharedQuestion    SharedQuestion[]
   challenge         Challenge[]
@@ -49,8 +50,9 @@ model UserInteraction {
   followingId String
   status      MateRequestStatus @default(PENDING)
   createdAt   DateTime          @default(now())
-  user        User?             @relation(fields: [userId], references: [id])
-  userId      String?
+
+  follower  User @relation(name: "UserFollower", fields: [followerId], references: [id])
+  following User @relation(name: "UserFollowing", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
 }
@@ -89,11 +91,11 @@ model UserSubject {
 }
 
 model Session {
-  id       String @id @default(uuid())
-  userId   String @unique
-  token    String @db.Text
-  deviceId String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String  @id @default(uuid())
+  userId   String  @unique
+  token    String  @db.Text
+  deviceId String?
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Otp {
@@ -189,6 +191,7 @@ model Exam {
   name          String
   subjectId     String
   topic         String?
+  isAttempt     Boolean  @default(false)
   duration      Int?
   noOfQuestions Int
   createdAt     DateTime @default(now())

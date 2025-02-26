@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/exam/exam_screen.dart';
 import 'package:my_flutter_app/screens/home/home_screen.dart';
-import 'package:my_flutter_app/screens/profile/profile_screen.dart';
 import 'package:my_flutter_app/screens/query/query_screen.dart';
+import 'package:my_flutter_app/screens/searchUser/search_user_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int selectedIndex;
@@ -40,7 +40,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
+          MaterialPageRoute(builder: (context) => SearchUsersScreen()),
         );
         break;
     }
@@ -71,20 +71,32 @@ class _BottomNavBarState extends State<BottomNavBar> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
+              icon: Icon(
+                Icons.home_filled,
+                size: 25,
+              ),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.question_answer),
+              icon: Icon(
+                Icons.question_answer,
+                size: 25,
+              ),
               label: 'Query',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.school),
+              icon: Icon(
+                Icons.school,
+                size: 25,
+              ),
               label: 'Exams',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
+              icon: Icon(
+                Icons.people_alt_outlined,
+                size: 25,
+              ),
+              label: 'Mates',
             ),
           ],
         ),

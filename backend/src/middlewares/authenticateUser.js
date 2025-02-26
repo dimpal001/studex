@@ -1,3 +1,7 @@
+const { PrismaClient } = require('@prisma/client')
+const jwt = require('jsonwebtoken')
+const prisma = new PrismaClient()
+
 const authenticateUser = async (request, response, next) => {
   const token = request.headers.authorization?.split(' ')[1]
 
@@ -10,7 +14,7 @@ const authenticateUser = async (request, response, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    const session = await prisma.session.findUnique({
+    const session = await prisma.session.findFirst({
       where: { token },
     })
 
@@ -23,6 +27,9 @@ const authenticateUser = async (request, response, next) => {
     request.user = decoded
     next()
   } catch (error) {
+    console.log(error)
     return response.status(401).json({ error: 'Invalid token' })
   }
 }
+
+module.exports = authenticateUser
