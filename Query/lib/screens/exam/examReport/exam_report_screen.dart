@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/app_color.dart';
 
 class ExamReportScreen extends StatefulWidget {
-  const ExamReportScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic> examResult;
+
+  const ExamReportScreen({Key? key, required this.examResult})
+      : super(key: key);
 
   @override
   State<ExamReportScreen> createState() => _ExamReportScreenState();
@@ -13,18 +16,6 @@ class _ExamReportScreenState extends State<ExamReportScreen>
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
 
-  final examResult = {
-    'id': 'exam_attempt_123',
-    'examName': 'Mathematics Final Exam',
-    'subject': 'Mathematics',
-    'topic': 'Algebra',
-    'duration': 120,
-    'noOfQuestions': 50,
-    'result': 92.6,
-    'status': 'COMPLETED',
-    'createdAt': DateTime.now(),
-  };
-
   @override
   void initState() {
     super.initState();
@@ -32,10 +23,13 @@ class _ExamReportScreenState extends State<ExamReportScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _progressAnimation =
-        Tween<double>(begin: 0, end: examResult['result'] as double).animate(
+    _progressAnimation = Tween<double>(
+      begin: 0,
+      end: (widget.examResult['result'] as num).toDouble(),
+    ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
+
     _controller.forward();
   }
 
@@ -62,10 +56,10 @@ class _ExamReportScreenState extends State<ExamReportScreen>
           child: Column(
             children: [
               ScoreCard(
-                  examResult: examResult,
+                  examResult: widget.examResult,
                   progressAnimation: _progressAnimation),
               const SizedBox(height: 20),
-              ExamDetailsCard(examResult: examResult),
+              ExamDetailsCard(examResult: widget.examResult),
               const SizedBox(height: 20),
               ActionButtons(
                 onQuestionsTap: () => _showQuestionsDrawer(context),
@@ -100,7 +94,7 @@ class _ExamReportScreenState extends State<ExamReportScreen>
   void _showShareDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => ShareDialog(examResult: examResult),
+      builder: (context) => ShareDialog(examResult: widget.examResult),
     );
   }
 }
@@ -113,7 +107,7 @@ class ScoreCard extends StatelessWidget {
       {Key? key, required this.examResult, required this.progressAnimation})
       : super(key: key);
 
-  Color getScoreColor(double score) {
+  Color getScoreColor(int score) {
     if (score >= 85) {
       return Colors.greenAccent;
     } else if (score >= 70) {
@@ -135,7 +129,7 @@ class ScoreCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(examResult['examName'],
+          Text(examResult['name'],
               style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -761,7 +755,7 @@ class _ShareDialogState extends State<ShareDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Exam: ${widget.examResult['examName']}',
+                Text('Exam: ${widget.examResult['name']}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text('Score: ${widget.examResult['result']}%'),
                 Text('Subject: ${widget.examResult['subject']}'),

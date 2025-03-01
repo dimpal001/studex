@@ -12,7 +12,7 @@ const router = express.Router()
 
 router.post('/create-exam', mobileAuthenticateUser, createExam)
 router.get('/get-upcoming-exams', mobileAuthenticateUser, fetchUpcomingExams)
-router.get('/get-past-exams', mobileAuthenticateUser, fetchPastExams)
+router.get('/get-past-exams', fetchPastExams)
 router.get('/get-single-exam', mobileAuthenticateUser, fetchSingleExam)
 router.get('/get-detail-exam-data', mobileAuthenticateUser, fetchExamData)
 

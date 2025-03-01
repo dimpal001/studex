@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/api.dart';
+import 'package:my_flutter_app/constants/api_headers.dart';
 import 'dart:convert';
 import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/error_component.dart';
@@ -33,8 +34,10 @@ class _StartExamScreenState extends State<StartExamScreen> {
   Future<Map<String, dynamic>> fetchExamData() async {
     final url =
         Uri.parse('$baseUrl/exam/get-single-exam?examId=${widget.examId}');
+    final headers = await getCustomHeaders();
     try {
-      final response = await http.get(url);
+      final response = await http.get(url, headers: headers);
+      print(response.statusCode);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['exam'];

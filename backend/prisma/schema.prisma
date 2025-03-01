@@ -7,6 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SubscriptionPlan {
+  id        String             @id @default(cuid())
+  name      String             @unique
+  price     Float              @default(0.0)
+  features  Json
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  users     UserSubscription[]
+}
+
+model UserSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  planId    String
+  startDate DateTime @default(now())
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
 model User {
   id                String            @id @default(cuid())
   phoneNumber       String            @unique
@@ -17,9 +41,7 @@ model User {
   bio               String?
   isActive          Boolean           @default(false)
   classId           String?
-  boardId           String?
   class             Class?            @relation(fields: [classId], references: [id], onDelete: SetNull)
-  board             Board?            @relation(fields: [boardId], references: [id], onDelete: SetNull)
   settings          Json?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -36,6 +58,7 @@ model User {
   examAttempt       ExamAttempt[]
   sharedQuestion    SharedQuestion[]
   challenge         Challenge[]
+  plan              UserSubscription?
 }
 
 enum MateRequestStatus {
@@ -106,13 +129,6 @@ model Otp {
   createdAt   DateTime @default(now())
 }
 
-model Board {
-  id       String     @id @default(cuid())
-  name     String     @unique
-  user     User[]
-  Question Question[]
-}
-
 model Class {
   id        String     @id @default(cuid())
   name      String
@@ -127,7 +143,6 @@ model Question {
   content   String   @db.Text
   subjectId String?
   classId   String?
-  boardId   String?
   chapterId String?
   createdAt DateTime @default(now())
   marks     Int?
@@ -136,7 +151,6 @@ model Question {
   user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   subject         Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   class           Class?           @relation(fields: [classId], references: [id], onDelete: SetNull)
-  board           Board?           @relation(fields: [boardId], references: [id], onDelete: SetNull)
   chapter         Chapter?         @relation(fields: [chapterId], references: [id], onDelete: SetNull)
   sharedQuestions SharedQuestion[]
 }

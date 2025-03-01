@@ -144,10 +144,59 @@ const getSubjects = async (request, response) => {
   }
 }
 
+const getFriends = async (request, response) => {
+  const { userId } = request.query
+
+  try {
+    if (!userId) {
+      return response.status(400).json({ error: 'User ID is required' })
+    }
+
+    const userInteractions = await prisma.userInteraction.findMany({
+      where: {
+        OR: [
+          { followerId: userId, status: 'ACCEPTED' },
+          { followingId: userId, status: 'ACCEPTED' },
+        ],
+      },
+      include: {
+        follower: {
+          include: {
+            class: true,
+          },
+        },
+        following: {
+          include: {
+            class: true,
+          },
+        },
+      },
+    })
+
+    const friends = userInteractions.map((interaction) => {
+      return interaction.followerId === userId
+        ? interaction.following
+        : interaction.follower
+    })
+
+    const allFriends = Array.from(
+      new Map(friends.map((friend) => [friend.id, friend])).values()
+    )
+
+    const hasMore = false
+
+    return response.status(200).json({ resData: allFriends, hasMore })
+  } catch (error) {
+    console.error(error)
+    return response.status(500).json({ error: 'Failed to retrieve friends' })
+  }
+}
+
 module.exports = {
   addEducationData,
   addSubjects,
   addSingleSubject,
   removeSubjectFromUser,
   getSubjects,
+  getFriends,
 }
