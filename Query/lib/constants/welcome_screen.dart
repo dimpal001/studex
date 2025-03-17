@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart'
     as carousel; // Added alias
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -43,7 +42,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -86,7 +85,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     effect: WormEffect(
                       dotWidth: 12,
                       dotHeight: 12,
-                      activeDotColor: AppColors.primary,
+                      activeDotColor: Theme.of(context).colorScheme.primary,
                       dotColor: Colors.grey.withOpacity(0.3),
                     ),
                   ),
@@ -96,8 +95,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       Navigator.pushNamed(context, '/signup');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.foreground,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor:
+                          Theme.of(context).colorScheme.surfaceContainer,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 40,
                         vertical: 15,
@@ -158,7 +158,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
             textAlign: TextAlign.center,
           ),

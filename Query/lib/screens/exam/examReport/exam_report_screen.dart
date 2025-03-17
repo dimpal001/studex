@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 
 class ExamReportScreen extends StatefulWidget {
   final Map<String, dynamic> examResult;
@@ -43,7 +42,7 @@ class _ExamReportScreenState extends State<ExamReportScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         title: const Text(
           'Exam Report',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
@@ -124,16 +123,16 @@ class ScoreCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.foreground,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           Text(examResult['name'],
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: Theme.of(context).colorScheme.onPrimary),
               textAlign: TextAlign.center),
           const SizedBox(height: 20),
           AnimatedBuilder(
@@ -147,7 +146,8 @@ class ScoreCard extends StatelessWidget {
                   child: CircularProgressIndicator(
                     value: progressAnimation.value / 100,
                     strokeWidth: 12,
-                    backgroundColor: Colors.grey.withOpacity(0.2),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.onPrimary.withAlpha(170),
                     valueColor: AlwaysStoppedAnimation(scoreColor),
                   ),
                 ),
@@ -155,12 +155,17 @@ class ScoreCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('${progressAnimation.value.toStringAsFixed(1)}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                    const Text('Score',
-                        style: TextStyle(fontSize: 16, color: Colors.white70)),
+                            color: Theme.of(context).colorScheme.onPrimary)),
+                    Text('Score',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withAlpha(150))),
                   ],
                 ),
               ],
@@ -168,8 +173,10 @@ class ScoreCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text('Congratulations on completing your exam!',
-              style:
-                  TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.8)),
+              style: TextStyle(
+                  fontSize: 16,
+                  color:
+                      Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
               textAlign: TextAlign.center),
         ],
       ),
@@ -187,28 +194,31 @@ class ExamDetailsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: AppColors.foreground, borderRadius: BorderRadius.circular(16)),
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Exam Details',
+          Text('Exam Details',
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white)),
+                  color: Theme.of(context).colorScheme.onPrimary)),
           const SizedBox(height: 16),
-          _buildDetailRow('Subject', examResult['subject']),
-          _buildDetailRow('Topic', examResult['topic']),
-          _buildDetailRow('Duration', '${examResult['duration']} minutes'),
-          _buildDetailRow('Questions', examResult['noOfQuestions'].toString()),
+          _buildDetailRow(context, 'Subject', examResult['subject']),
+          _buildDetailRow(context, 'Topic', examResult['topic']),
           _buildDetailRow(
-              'Date', examResult['createdAt'].toString().substring(0, 10)),
+              context, 'Duration', '${examResult['duration']} minutes'),
+          _buildDetailRow(
+              context, 'Questions', examResult['noOfQuestions'].toString()),
+          _buildDetailRow(context, 'Date',
+              examResult['createdAt'].toString().substring(0, 10)),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -216,11 +226,12 @@ class ExamDetailsCard extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 16, color: Colors.white.withOpacity(0.7))),
-          Text(value,
-              style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onPrimary.withAlpha(150),
                   fontWeight: FontWeight.w500)),
         ],
       ),
@@ -233,44 +244,45 @@ class ActionButtons extends StatelessWidget {
   final VoidCallback onChallengeTap;
   final VoidCallback onShareTap;
 
-  const ActionButtons(
-      {Key? key,
-      required this.onQuestionsTap,
-      required this.onChallengeTap,
-      required this.onShareTap})
-      : super(key: key);
+  const ActionButtons({
+    Key? key,
+    required this.onQuestionsTap,
+    required this.onChallengeTap,
+    required this.onShareTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      spacing: 10,
       children: [
-        _buildButton('Questions', Icons.quiz, onQuestionsTap),
-        _buildButton('Challenge', Icons.sports_esports, onChallengeTap),
-        _buildButton('Share', Icons.share, onShareTap),
+        _buildButton(context, 'Questions', Icons.quiz, onQuestionsTap),
+        _buildButton(
+            context, 'Challenge', Icons.sports_esports, onChallengeTap),
+        _buildButton(context, 'Share', Icons.share, onShareTap),
       ],
     );
   }
 
-  Widget _buildButton(String label, IconData icon, VoidCallback onTap) {
+  Widget _buildButton(
+      BuildContext context, String label, IconData icon, VoidCallback onTap) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Theme.of(context).colorScheme.primary)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary), // Icon added
-          const SizedBox(width: 8), // Spacing between icon and text
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(color: AppColors.primary),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ],
       ),
@@ -350,8 +362,8 @@ class QuestionsDrawer extends StatelessWidget {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -365,14 +377,14 @@ class QuestionsDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
               'Questions Review',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ),
@@ -399,8 +411,7 @@ class QuestionsDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Card(
-        color: AppColors.foreground.withOpacity(0.9),
-        elevation: 2,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -412,10 +423,10 @@ class QuestionsDrawer extends StatelessWidget {
                 children: [
                   Text(
                     'Question $questionNumber',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   Icon(
@@ -428,13 +439,19 @@ class QuestionsDrawer extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 question['question'] as String,
-                style: const TextStyle(fontSize: 16, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onPrimary),
               ),
               const SizedBox(height: 12),
-              _buildOption('A', question['optionA'], correctAns, userAnswer),
-              _buildOption('B', question['optionB'], correctAns, userAnswer),
-              _buildOption('C', question['optionC'], correctAns, userAnswer),
-              _buildOption('D', question['optionD'], correctAns, userAnswer),
+              _buildOption(
+                  context, 'A', question['optionA'], correctAns, userAnswer),
+              _buildOption(
+                  context, 'B', question['optionB'], correctAns, userAnswer),
+              _buildOption(
+                  context, 'C', question['optionC'], correctAns, userAnswer),
+              _buildOption(
+                  context, 'D', question['optionD'], correctAns, userAnswer),
               const SizedBox(height: 12),
               _buildAnswerSummary(correctAns, userAnswer),
             ],
@@ -444,15 +461,15 @@ class QuestionsDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildOption(String optionKey, String? optionText, String correctAns,
-      String? userAnswer) {
+  Widget _buildOption(BuildContext context, optionKey, String? optionText,
+      String correctAns, String? userAnswer) {
     final isCorrect = optionKey == correctAns;
     final isUserAnswer = optionKey == userAnswer;
     final textColor = isCorrect
         ? Colors.green
         : (isUserAnswer && !isCorrect)
             ? Colors.red
-            : Colors.white70;
+            : Theme.of(context).colorScheme.onPrimary;
     final backgroundColor = isCorrect
         ? Colors.green.withOpacity(0.1)
         : (isUserAnswer && !isCorrect)
@@ -595,8 +612,8 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: AppColors.background, // Dark themed background
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface, // Dark themed background
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -607,7 +624,7 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
             width: 50,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -619,7 +636,7 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ),
@@ -640,7 +657,7 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: user['selected']
-                          ? AppColors.primary.withOpacity(0.03)
+                          ? Theme.of(context).colorScheme.primary.withAlpha(30)
                           : Colors.transparent,
                     ),
                     child: Row(
@@ -660,7 +677,8 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
                               Text(
                                 user['name'],
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -668,7 +686,10 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
                               Text(
                                 'Class: ${user['class']}',
                                 style: TextStyle(
-                                  color: Colors.white70,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withAlpha(170),
                                   fontSize: 14,
                                 ),
                               ),
@@ -685,8 +706,8 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
                             onChanged: (value) {
                               setState(() => user['selected'] = value!);
                             },
-                            activeColor: AppColors.primary,
-                            checkColor: Colors.black,
+                            activeColor: Theme.of(context).colorScheme.primary,
+                            checkColor: Colors.white,
                           ),
                         ),
                       ],
@@ -704,7 +725,7 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
               onPressed:
                   demoUsers.any((user) => user['selected']) ? () {} : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 disabledBackgroundColor: Colors.grey,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
@@ -739,7 +760,7 @@ class _ShareDialogState extends State<ShareDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.foreground,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Text('Share Your Result',
           style: TextStyle(color: Colors.white)),
@@ -750,7 +771,7 @@ class _ShareDialogState extends State<ShareDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: AppColors.background,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,13 +786,15 @@ class _ShareDialogState extends State<ShareDialog> {
           const SizedBox(height: 16),
           TextField(
             controller: _captionController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Add a caption',
               labelStyle: TextStyle(color: Colors.white70),
               enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primary)),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).colorScheme.primary)),
               focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primary)),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).colorScheme.primary)),
             ),
             style: const TextStyle(color: Colors.white),
           ),
@@ -780,15 +803,16 @@ class _ShareDialogState extends State<ShareDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child:
-              const Text('Cancel', style: TextStyle(color: AppColors.primary)),
+          child: Text('Cancel',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary)),
         ),
         ElevatedButton(
           onPressed: () {
             // Handle share action here
             Navigator.pop(context);
           },
-          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary),
           child: const Text('Share'),
         ),
       ],

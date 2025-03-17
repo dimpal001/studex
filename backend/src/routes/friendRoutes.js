@@ -14,6 +14,6 @@ router.get('/search-user', searchUser)
 router.post('/send-request', mobileAuthenticateUser, sendFriendRequest)
 router.post('/response-request', mobileAuthenticateUser, respondFriendRequest)
 router.post('/unfriend', mobileAuthenticateUser, unfriend)
-router.get('/friend-list', mobileAuthenticateUser, friendList)
+router.get('/friend-list', friendList)
 
 module.exports = router

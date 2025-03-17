@@ -149,7 +149,11 @@ const friendList = async (request, response) => {
         OR: [{ followerId: userId }, { followingId: userId }],
       },
       include: {
-        following: true,
+        follower: {
+          include: {
+            class: true,
+          },
+        },
       },
     })
 

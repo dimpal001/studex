@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/Alert.dart';
 import 'package:my_flutter_app/constants/api.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/auth/add_details_screen.dart';
 import 'dart:convert';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
@@ -111,7 +110,7 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                 ),
               ),
             ),
@@ -123,7 +122,8 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                 height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.15),
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
                 ),
               ),
             ),
@@ -143,10 +143,10 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    const Text(
+                    Text(
                       "Set Your Password",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -163,8 +163,8 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                     Text(
                       "Create a password for ${widget.phoneNumber}",
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
@@ -173,37 +173,36 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.2)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.2)),
                       ),
                       child: Column(
                         children: [
                           TextField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 18),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle:
-                                  const TextStyle(color: Colors.white70),
-                              prefixIcon:
-                                  const Icon(Icons.lock, color: Colors.white70),
+                              labelStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
+                              prefixIcon: Icon(Icons.lock,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword
                                       ? Icons.visibility
                                       : Icons.visibility_off,
-                                  color: Colors.white70,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -212,15 +211,20 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                                 },
                               ),
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.05),
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withOpacity(0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                    color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    width: 2),
                               ),
                             ),
                           ),
@@ -228,20 +232,24 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                           TextField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 18),
                             decoration: InputDecoration(
                               labelText: 'Confirm Password',
-                              labelStyle:
-                                  const TextStyle(color: Colors.white70),
-                              prefixIcon:
-                                  const Icon(Icons.lock, color: Colors.white70),
+                              labelStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
+                              prefixIcon: Icon(Icons.lock,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword
                                       ? Icons.visibility
                                       : Icons.visibility_off,
-                                  color: Colors.white70,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -251,15 +259,20 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                                 },
                               ),
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.05),
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withOpacity(0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                    color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    width: 2),
                               ),
                             ),
                           ),
@@ -272,12 +285,16 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                       height: 55,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                           elevation: 8,
-                          shadowColor: AppColors.primary.withOpacity(0.5),
+                          shadowColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5),
                         ),
                         onPressed: _isLoading ? null : _setPassword,
                         child: _isLoading
@@ -309,14 +326,16 @@ class _FillPasswordScreenState extends State<FillPasswordScreen> {
                         );
                       },
                       child: RichText(
-                        text: const TextSpan(
+                        text: TextSpan(
                           text: "Back to ",
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 16),
                           children: [
                             TextSpan(
                               text: "Login",
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

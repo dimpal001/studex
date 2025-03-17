@@ -10,7 +10,7 @@ const mobileAuthenticateUser = require('../middlewares/mobileAuthenticateUser')
 
 const router = express.Router()
 
-router.post('/create-exam', mobileAuthenticateUser, createExam)
+router.post('/create-exam', createExam)
 router.get('/get-upcoming-exams', mobileAuthenticateUser, fetchUpcomingExams)
 router.get('/get-past-exams', fetchPastExams)
 router.get('/get-single-exam', mobileAuthenticateUser, fetchSingleExam)

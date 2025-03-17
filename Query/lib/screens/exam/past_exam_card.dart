@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/api.dart';
 import 'package:my_flutter_app/constants/api_headers.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/error_component.dart';
 import 'package:my_flutter_app/screens/exam/examReport/exam_report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:skeletonizer/skeletonizer.dart';
 
 class PastExamScreen extends StatefulWidget {
   @override
@@ -15,7 +15,6 @@ class PastExamScreen extends StatefulWidget {
 }
 
 class _PastExamScreenState extends State<PastExamScreen> {
-  // States for managing API data, loading, and error
   List<Map<String, dynamic>> pastExams = [];
   bool isLoading = true;
   bool hasError = false;
@@ -26,7 +25,6 @@ class _PastExamScreenState extends State<PastExamScreen> {
     fetchPastExams();
   }
 
-  // Function to fetch data from API
   Future<void> fetchPastExams() async {
     setState(() {
       isLoading = true;
@@ -44,7 +42,6 @@ class _PastExamScreenState extends State<PastExamScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Ensure the response contains the "exams" key and it's a List
         if (data.containsKey("exams") && data["exams"] is List) {
           setState(() {
             pastExams = (data["exams"] as List)
@@ -80,37 +77,34 @@ class _PastExamScreenState extends State<PastExamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Conditional rendering based on state
             Expanded(
-              child: isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppColors.primary),
-                      ),
-                    )
-                  : hasError
-                      ? ErrorComponent(
-                          message: "Failed to load exams. Please try again.",
-                          onReload: fetchPastExams,
-                        )
-                      : pastExams.isEmpty
-                          ? Center(
-                              child: Text(
-                                "No exams available.",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white70,
-                                ),
+                child: hasError
+                    ? ErrorComponent(
+                        message: "Failed to load exams. Please try again.",
+                        onReload: fetchPastExams,
+                      )
+                    : pastExams.isEmpty
+                        ? Center(
+                            child: Text(
+                              "No exams available.",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary
+                                    .withAlpha(150),
                               ),
-                            )
-                          : ListView.builder(
-                              itemCount: pastExams.length,
+                            ),
+                          )
+                        : Skeletonizer(
+                            enabled: isLoading,
+                            child: ListView.builder(
+                              itemCount: isLoading ? 5 : pastExams.length,
                               itemBuilder: (context, index) {
                                 final exam = pastExams[index];
                                 double score = exam["result"]?.toDouble() ?? 0;
@@ -121,7 +115,9 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                   padding: EdgeInsets.all(5),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
-                                    color: AppColors.foreground,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainer,
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
@@ -129,7 +125,6 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        // Circular Progress Indicator for Score
                                         Stack(
                                           alignment: Alignment.center,
                                           children: [
@@ -174,19 +169,21 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                exam["name"],
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
+                                              Text(exam["name"],
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary,
+                                                  )),
                                               const SizedBox(height: 4),
                                               Text(
                                                 "${exam["subject"]} • ${exam["topic"]}",
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
+                                                style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimary,
                                                   fontSize: 14,
                                                 ),
                                               ),
@@ -197,13 +194,16 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                         // View Details Button
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                AppColors.foreground,
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .surfaceContainer,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                               side: BorderSide(
-                                                  color: AppColors.primary),
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary),
                                             ),
                                           ),
                                           onPressed: () {
@@ -217,10 +217,12 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                               ),
                                             );
                                           },
-                                          child: const Text(
+                                          child: Text(
                                             "View",
                                             style: TextStyle(
-                                                color: AppColors.primary),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           ),
                                         ),
                                       ],
@@ -229,7 +231,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                 );
                               },
                             ),
-            ),
+                          )),
           ],
         ),
       ),

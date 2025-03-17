@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -5,12 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_flutter_app/constants/Alert.dart';
 import 'package:my_flutter_app/constants/api.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/bottom_nav_bar.dart';
-import 'package:my_flutter_app/constants/encryption.dart';
-import 'package:my_flutter_app/screens/query/Question_card.dart';
+import 'package:my_flutter_app/constants/markdown_stylesheet.dart';
+import 'package:my_flutter_app/screens/query/action_button.dart';
+import 'package:my_flutter_app/screens/query/dropdown_button.dart';
+import 'package:my_flutter_app/screens/query/history/history_screen.dart';
+import 'package:my_flutter_app/screens/query/question_card.dart';
+import 'package:my_flutter_app/screens/query/skeleton_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class QueryScreen extends StatefulWidget {
   const QueryScreen({super.key});
@@ -20,20 +26,22 @@ class QueryScreen extends StatefulWidget {
 }
 
 class _QueryScreenState extends State<QueryScreen> {
+  List<Map<String, String>> _questionsList = [];
   final TextEditingController _questionController = TextEditingController();
   String? _selectedSubject;
   String? _selectedMarks;
   String? _selectedLanguage;
   XFile? _selectedImage;
+  bool _isTypingComplete = false;
+  bool _isError = false;
 
   bool _isAsking = false;
+  String? _currentQuestion;
+  String? _currentAnswer;
+  String? _errorMessage;
 
-  final List<String> _subjects = [
-    "Computer Science Engineering",
-    "Physics",
-    "Chemistry",
-    "Mathematics",
-  ];
+  List<String> _subjects = [];
+
   final List<String> _marksOptions = ["2 Marks", "5 Marks", "10 Marks"];
   final List<String> _languageOptions = [
     "English",
@@ -43,9 +51,54 @@ class _QueryScreenState extends State<QueryScreen> {
   ];
   final ImagePicker _picker = ImagePicker();
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSubjects();
+  }
+
+  Future<void> _loadSubjects() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? subjectsData = prefs.getString('subjectsList');
+
+    setState(() {
+      if (subjectsData != null) {
+        List<dynamic> subjectsJson = jsonDecode(subjectsData);
+        print(subjectsJson[0]);
+        _subjects = subjectsJson
+            .map<String>((subject) => subject["subject"]['name'].toString())
+            .toList();
+      } else {
+        _subjects = [
+          "Computer Science Engineering",
+          "Physics",
+          "Chemistry",
+          "Mathematics",
+        ];
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    super.dispose();
+  }
+
   void _pickImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(source: source);
+
     if (image != null) {
+      File imageFile = File(image.path);
+      int fileSize = await imageFile.length();
+      double fileSizeInMB = fileSize / (1024 * 1024);
+
+      if (fileSizeInMB > 5) {
+        Alert.show(context, "Image size should be less than 2MB",
+            type: SnackbarType.error);
+        return;
+      }
+
       setState(() {
         _selectedImage = image;
       });
@@ -61,7 +114,7 @@ class _QueryScreenState extends State<QueryScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.foreground,
+            color: Theme.of(context).colorScheme.surfaceContainer,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)
@@ -77,7 +130,7 @@ class _QueryScreenState extends State<QueryScreen> {
                     color: _selectedSubject == option ||
                             _selectedMarks == option ||
                             _selectedLanguage == option
-                        ? AppColors.primary
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.transparent),
                 onTap: () {
                   onSelect(option);
@@ -91,8 +144,6 @@ class _QueryScreenState extends State<QueryScreen> {
     );
   }
 
-  final List<Map<String, String>> demoData = [];
-
   Future<void> _askQuestion() async {
     FocusScope.of(context).unfocus();
     final prefs = await SharedPreferences.getInstance();
@@ -105,96 +156,407 @@ class _QueryScreenState extends State<QueryScreen> {
     final marks = _selectedMarks;
     final language = _selectedLanguage;
 
-    if (question.isEmpty ||
-        subjectData == null ||
-        marks == null ||
-        language == null) {
-      Alert.show(context, "Please fill all fields", type: SnackbarType.error);
+    if (question.isEmpty) {
+      Alert.show(context, "Please enter a question", type: SnackbarType.error);
       return;
     }
 
     setState(() {
       _isAsking = true;
+      _isError = false;
+      _isTypingComplete = false;
     });
 
     final url = Uri.parse('$baseUrl/question/ask');
-    final encryptedData = Encryption.encryptData({
-      "userId": userId,
-      "question": question,
-      "subjectData": subjectData,
-      "boardData": boardData,
-      "classData": classData,
-      "marks": marks,
-      "language": language,
-    });
 
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"data": encryptedData}),
-      );
+      var request = http.MultipartRequest("POST", url);
 
-      final responseData = jsonDecode(response.body);
+      // Add text fields
+      request.fields["userId"] = userId ?? "";
+      request.fields["question"] = question;
+      request.fields["subjectData"] = subjectData ?? "";
+      request.fields["boardData"] = boardData ?? "";
+      request.fields["classData"] = classData ?? "";
+      request.fields["marks"] = marks ?? "";
+      request.fields["language"] = language ?? "";
+
+      // Add image if selected
+      if (_selectedImage != null) {
+        File imageFile = File(_selectedImage!.path);
+        request.files.add(
+          await http.MultipartFile.fromPath("image", imageFile.path),
+        );
+      }
+
+      // Send request
+      var response = await request.send();
+
+      // Get response data
+      final responseData = await response.stream.bytesToString();
+      final jsonResponse = jsonDecode(responseData);
 
       if (response.statusCode == 200) {
-        final decryptedResponse =
-            Encryption.decryptData(responseData["resData"]);
-        final question = decryptedResponse["question"];
-        final answer = decryptedResponse["answer"];
+        final data = jsonResponse["resData"];
+        final answer = data["answers"][0]["content"];
 
-        demoData.insert(0, {
-          "question": question,
-          "subject": subjectData!,
-          "time": "Just now",
-          "answer": answer,
-        });
+        if (mounted) {
+          setState(() {
+            _questionsList.insert(0, {
+              "id": data["id"],
+              "question": data["content"],
+              "answer": answer,
+              "subject": _selectedSubject ?? "Unknown",
+              "time": "Just Now",
+            });
 
-        _questionController.clear();
-        setState(() {
-          _selectedImage = null;
-        });
-        Alert.show(context, "Question submitted successfully!",
-            type: SnackbarType.success);
+            _currentAnswer = answer;
+            _currentQuestion = data["content"];
+
+            _isAsking = false;
+            _isTypingComplete = false;
+          });
+
+          _questionController.clear();
+          setState(() {
+            _selectedImage = null;
+          });
+
+          _showAnswerDrawer();
+        }
       } else {
-        final errorMessage = responseData["error"] ?? "Unable to fetch data";
-        Alert.show(context, errorMessage, type: SnackbarType.error);
+        final errorMessage = jsonResponse["error"] ?? "Unable to fetch data";
+        if (mounted) {
+          setState(() {
+            _errorMessage = errorMessage;
+            _isAsking = false;
+            _isError = true;
+            _isTypingComplete = false;
+          });
+          _showAnswerDrawer();
+        }
       }
     } catch (error) {
-      Alert.show(context, "Error connecting to server",
-          type: SnackbarType.error);
-    } finally {
-      setState(() {
-        _isAsking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _questionsList.insert(0, {
+            "question": question,
+            "answer": "Error connecting to server: $error",
+            "subject": _selectedSubject ?? "Unknown",
+            "time": "Just Now",
+          });
+
+          _isAsking = false;
+          _isError = true;
+          _isTypingComplete = false;
+        });
+
+        _showAnswerDrawer();
+      }
     }
+  }
+
+  void _showAnswerDrawer() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            ScrollController scrollController = ScrollController();
+            double initialSize = 0.75;
+
+            void _scrollToBottom() {
+              if (scrollController.hasClients) {
+                scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+            }
+
+            void _scrollToTop() {
+              if (scrollController.hasClients) {
+                scrollController.animateTo(
+                  scrollController.position.minScrollExtent,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+            }
+
+            void _startAutoScrolling() {
+              if (!_isTypingComplete &&
+                  _currentAnswer != null &&
+                  scrollController.hasClients) {
+                Timer.periodic(const Duration(milliseconds: 100), (timer) {
+                  if (_isTypingComplete || !scrollController.hasClients) {
+                    timer.cancel();
+                  } else {
+                    _scrollToBottom();
+                  }
+                });
+              }
+            }
+
+            if (!_isTypingComplete && _currentAnswer != null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _startAutoScrolling();
+              });
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: initialSize,
+              minChildSize: 0.35,
+              maxChildSize: 0.95,
+              builder: (context, sheetScrollController) {
+                final colorScheme = Theme.of(context).colorScheme;
+
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        colorScheme.surface,
+                        colorScheme.surfaceContainerLow,
+                      ],
+                    ),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Container(
+                          width: 50,
+                          height: 6,
+                          margin: const EdgeInsets.only(top: 8),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onSurface.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_isError) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.error.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                          color: colorScheme.error
+                                              .withOpacity(0.5)),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.error_outline,
+                                            color: colorScheme.error, size: 24),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: AnimatedTextKit(
+                                            animatedTexts: [
+                                              TyperAnimatedText(
+                                                _errorMessage ??
+                                                    'Something went wrong',
+                                                textStyle: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: colorScheme.error,
+                                                ),
+                                                speed: const Duration(
+                                                    milliseconds: 30),
+                                              ),
+                                            ],
+                                            isRepeatingAnimation: false,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ] else ...[
+                                  // Question Section
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: colorScheme.primary
+                                              .withOpacity(0.1),
+                                        ),
+                                        child: Icon(
+                                          Icons.question_answer,
+                                          size: 20,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        "Question",
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  AnimatedOpacity(
+                                    opacity: _isAsking ? 0.5 : 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: _isAsking
+                                        ? buildSkeletonLoader(context)
+                                        : MarkdownBody(
+                                            data: _currentQuestion ?? '',
+                                            styleSheet: buildMarkdownStyleSheet(
+                                                context),
+                                          ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Answer Section
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.green.withOpacity(0.1),
+                                        ),
+                                        child: Icon(
+                                          Icons.check_circle,
+                                          size: 20,
+                                          color: Colors.green.shade600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        "Answer",
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (_isAsking)
+                                    buildSkeletonLoader(context)
+                                  else if (_currentAnswer != null)
+                                    AnimatedSwitcher(
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      transitionBuilder: (child, animation) {
+                                        return FadeTransition(
+                                            opacity: animation, child: child);
+                                      },
+                                      child: _isTypingComplete
+                                          ? MarkdownBody(
+                                              key: const ValueKey('complete'),
+                                              data: _currentAnswer ?? '',
+                                              styleSheet:
+                                                  buildMarkdownStyleSheet(
+                                                      context),
+                                            )
+                                          : AnimatedTextKit(
+                                              key: ValueKey(_currentAnswer),
+                                              animatedTexts: [
+                                                TyperAnimatedText(
+                                                  _currentAnswer ?? '',
+                                                  textStyle: TextStyle(
+                                                    fontSize: 16,
+                                                    color:
+                                                        colorScheme.onSurface,
+                                                    height: 1.4,
+                                                  ),
+                                                  speed: const Duration(
+                                                      milliseconds: 10),
+                                                ),
+                                              ],
+                                              isRepeatingAnimation: false,
+                                              onFinished: () {
+                                                setModalState(() {
+                                                  _isTypingComplete = true;
+                                                });
+                                                _scrollToTop();
+                                              },
+                                            ),
+                                    )
+                                  else
+                                    Text(
+                                      "No answer available yet",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.6),
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  const SizedBox(height: 40),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Studex",
           style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary),
+              color: Theme.of(context).colorScheme.primary),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.white70),
+            icon: Icon(Icons.history,
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200)),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Question history coming soon!")),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HistoryScreen()),
               );
             },
             tooltip: 'View History',
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white70),
+            icon: Icon(Icons.more_vert,
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200)),
             onPressed: () {},
             tooltip: 'More Options',
           ),
@@ -208,14 +570,11 @@ class _QueryScreenState extends State<QueryScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.foreground.withOpacity(0.95),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainer
+                      .withAlpha(200),
                   borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4)),
-                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,34 +582,43 @@ class _QueryScreenState extends State<QueryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildDropdownButton(
+                        buildDropdownButton(
+                            context,
                             "Subject",
                             _selectedSubject,
                             _subjects,
-                            (value) =>
-                                setState(() => _selectedSubject = value)),
-                        _buildDropdownButton(
+                            (value) => setState(() => _selectedSubject = value),
+                            _showDropdown),
+                        buildDropdownButton(
+                            context,
                             "Marks",
                             _selectedMarks,
                             _marksOptions,
-                            (value) => setState(() => _selectedMarks = value)),
-                        _buildDropdownButton(
+                            (value) => setState(() => _selectedMarks = value),
+                            _showDropdown),
+                        buildDropdownButton(
+                            context,
                             "Language",
                             _selectedLanguage ?? "English",
                             _languageOptions,
                             (value) =>
-                                setState(() => _selectedLanguage = value)),
+                                setState(() => _selectedLanguage = value),
+                            _showDropdown),
                       ],
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: _questionController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withAlpha(240)),
                       decoration: InputDecoration(
                         hintText: "Type your question here...",
                         hintStyle: const TextStyle(color: Colors.grey),
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -269,13 +637,12 @@ class _QueryScreenState extends State<QueryScreen> {
                     ),
                     const SizedBox(height: 10),
                     Row(
+                      spacing: 10,
                       children: [
-                        _buildActionButton(Icons.camera_alt_outlined,
-                            () => _pickImage(ImageSource.camera), 'Camera'),
-                        const SizedBox(width: 12),
-                        _buildActionButton(Icons.image_outlined,
-                            () => _pickImage(ImageSource.gallery), 'Gallery'),
-                        const SizedBox(width: 12),
+                        buildActionButton(context, Icons.camera_alt_outlined,
+                            () => _pickImage(ImageSource.camera), "Camera"),
+                        buildActionButton(context, Icons.image_outlined,
+                            () => _pickImage(ImageSource.gallery), "Gallery"),
                         if (_selectedImage != null)
                           GestureDetector(
                             onTap: () => setState(() => _selectedImage = null),
@@ -286,8 +653,8 @@ class _QueryScreenState extends State<QueryScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                   child: Image.file(
                                     File(_selectedImage!.path),
-                                    width: 50,
-                                    height: 50,
+                                    width: 38,
+                                    height: 38,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -307,12 +674,14 @@ class _QueryScreenState extends State<QueryScreen> {
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           child: _isAsking
-                              ? const CupertinoActivityIndicator(
-                                  color: AppColors.primary, radius: 12)
+                              ? CupertinoActivityIndicator(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  radius: 12)
                               : ElevatedButton(
                                   onPressed: _askQuestion,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(12)),
@@ -340,96 +709,41 @@ class _QueryScreenState extends State<QueryScreen> {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Column(
-                    children: [
-                      if (demoData.isEmpty)
-                        const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.question_answer,
-                                  size: 60, color: Colors.grey),
-                              SizedBox(height: 16),
-                              Text(
-                                'No Questions Yet',
-                                style:
-                                    TextStyle(fontSize: 18, color: Colors.grey),
-                              ),
-                            ],
+              child: _questionsList.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.question_answer,
+                              size: 60, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'Ask a question to get started',
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
                           ),
-                        )
-                      else
-                        ...demoData.map((data) {
-                          return QuestionCard(
-                            question: data["question"]!,
-                            subject: data["subject"]!,
-                            time: data["time"]!,
-                            answer: data["answer"]!,
-                          );
-                        }).toList(),
-                    ],
-                  ),
-                ),
-              ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 12),
+                      itemCount: _questionsList.length,
+                      itemBuilder: (context, index) {
+                        final qna = _questionsList[index];
+                        return QuestionCard(
+                          questionId: qna["id"]!,
+                          question: qna["question"]!,
+                          subject: qna["subject"]!,
+                          time: qna["time"]!,
+                          answer: qna["answer"]!,
+                        );
+                      },
+                    ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavBar(selectedIndex: 1),
-    );
-  }
-
-  Widget _buildDropdownButton(String label, String? value, List<String> options,
-      Function(String) onSelect) {
-    return SizedBox(
-      width: 103,
-      child: GestureDetector(
-        onTap: () => _showDropdown(context, options, onSelect),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  value ?? label,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      overflow: TextOverflow.ellipsis),
-                ),
-              ),
-              const Icon(Icons.arrow_drop_down, color: Colors.grey),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(IconData icon, VoidCallback onTap, String tooltip) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
-        ),
-      ),
     );
   }
 }

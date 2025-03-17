@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/api.dart';
 import 'package:my_flutter_app/constants/api_headers.dart';
+import 'package:my_flutter_app/constants/confirm_modal.dart';
 import 'dart:convert';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/error_component.dart';
 
 class ExamAttemptScreen extends StatefulWidget {
@@ -91,38 +91,21 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
   void _showExitConfirmation() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.foreground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text(
-          "Exit Exam?",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          "Are you sure you want to exit? Your progress will be lost.",
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Continue Exam",
-                style: TextStyle(color: AppColors.primary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, {'submitted': false});
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text("Exit", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      barrierColor: Colors.black.withOpacity(0.7),
+      builder: (BuildContext context) {
+        return CustomAlertDialog(
+          title: "Exit Exam?",
+          description:
+              "Are you sure you want to exit? Your progress will be lost",
+          variant: Colors.red,
+          onConfirm: () {
+            Navigator.pop(context);
+            Navigator.pop(context, {'submitted': false});
+          },
+          confirmText: "Exit",
+          cancelText: "Continue Exam",
+        );
+      },
     );
   }
 
@@ -146,7 +129,7 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
         return false;
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: FutureBuilder<Map<String, dynamic>>(
           future: _examFuture,
           builder: (context, snapshot) {
@@ -175,32 +158,38 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
               children: [
                 // AppBar
                 AppBar(
-                  backgroundColor: AppColors.foreground,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainer,
                   automaticallyImplyLeading: false,
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         examData["name"],
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 20),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 20),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.timer,
-                                color: AppColors.primary, size: 20),
+                            Icon(Icons.timer,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 20),
                             const SizedBox(width: 6),
                             Text(
                               _formatTime(_remainingSeconds),
-                              style: const TextStyle(
-                                color: AppColors.primary,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
@@ -219,17 +208,21 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
                     children: [
                       Text(
                         "Question ${_currentQuestionIndex + 1}/${examData["noOfQuestions"]}",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 16),
                       ),
                       SizedBox(
                         width: 100,
                         child: LinearProgressIndicator(
                           value: (_currentQuestionIndex + 1) /
                               examData["noOfQuestions"],
-                          backgroundColor: Colors.grey[800],
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withAlpha(180),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.primary),
                         ),
                       ),
                     ],
@@ -242,7 +235,7 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
                     child: Card(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
-                      color: AppColors.foreground,
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: SingleChildScrollView(
@@ -251,8 +244,9 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
                             children: [
                               Text(
                                 currentQuestion["question"],
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -283,14 +277,17 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
                           onPressed: () =>
                               setState(() => _currentQuestionIndex--),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.foreground,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surfaceContainer,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 15),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text("Previous",
-                              style: TextStyle(color: Colors.white)),
+                          child: Text("Previous",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary)),
                         )
                       else
                         const SizedBox(),
@@ -300,7 +297,8 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
                             ? () => setState(() => _currentQuestionIndex++)
                             : _submitExam,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 15),
                           shape: RoundedRectangleBorder(
@@ -335,11 +333,13 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.2)
-              : AppColors.background,
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
             width: 2,
           ),
         ),
@@ -350,7 +350,9 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
               height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? AppColors.primary : Colors.grey[700],
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[700],
               ),
               child: Center(
                 child: Text(
@@ -364,7 +366,9 @@ class _ExamAttemptScreenState extends State<ExamAttemptScreen>
             Expanded(
               child: Text(
                 text,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 16),
               ),
             ),
           ],

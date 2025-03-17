@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 
 class ChallengeExamCard extends StatelessWidget {
   final String title, subtitle, duration, questions, timeLeft;
@@ -17,24 +16,30 @@ class ChallengeExamCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.foreground,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(10),
-        border: Border(left: BorderSide(color: AppColors.primary, width: 4)),
+        border: Border(
+            left: BorderSide(
+                color: Theme.of(context).colorScheme.primary, width: 4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Challenge from Rahul",
               style: TextStyle(
-                  color: AppColors.primary, fontWeight: FontWeight.bold)),
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
           Text(title,
               style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 18)),
           SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(color: Colors.grey)),
+          Text(subtitle,
+              style: TextStyle(
+                  color:
+                      Theme.of(context).colorScheme.onPrimary.withAlpha(120))),
           SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -44,17 +49,37 @@ class ChallengeExamCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.watch_later, color: Colors.grey, size: 15),
+                      Icon(Icons.watch_later,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withAlpha(120),
+                          size: 15),
                       SizedBox(width: 5),
-                      Text("$duration", style: TextStyle(color: Colors.grey)),
+                      Text("$duration",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withAlpha(120))),
                     ],
                   ),
                   SizedBox(height: 5),
                   Row(
                     children: [
-                      Icon(Icons.help_outline, color: Colors.grey, size: 15),
+                      Icon(Icons.help_outline,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withAlpha(120),
+                          size: 15),
                       SizedBox(width: 5),
-                      Text("$questions", style: TextStyle(color: Colors.grey)),
+                      Text("$questions",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withAlpha(120))),
                     ],
                   ),
                 ],
@@ -64,7 +89,7 @@ class ChallengeExamCard extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    backgroundColor: AppColors.primary),
+                    backgroundColor: Theme.of(context).colorScheme.primary),
                 onPressed: () {},
                 child: Text("Start Now", style: TextStyle(color: Colors.white)),
               ),

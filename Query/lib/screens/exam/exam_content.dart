@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/exam/challenge_exam_card.dart';
+import 'package:my_flutter_app/screens/exam/createExam/create_exam.dart';
 import 'package:my_flutter_app/screens/exam/past_exam_card.dart';
 import 'package:my_flutter_app/screens/exam/tab_bar_widget.dart';
 import 'package:my_flutter_app/screens/exam/upcoming_exam_card.dart';
@@ -112,7 +112,7 @@ class _ExamContentState extends State<ExamContent>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
       ),
-      backgroundColor: AppColors.foreground,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       isScrollControlled: true,
       builder: (context) => _buildExamForm(context),
     );
@@ -139,12 +139,12 @@ class _ExamContentState extends State<ExamContent>
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               "Create New Exam",
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: Theme.of(context).colorScheme.onPrimary),
             ),
             const SizedBox(height: 15),
             _buildTextField(_examNameController, "Exam Name"),
@@ -188,7 +188,7 @@ class _ExamContentState extends State<ExamContent>
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -212,17 +212,21 @@ class _ExamContentState extends State<ExamContent>
         keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white38),
+            borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: AppColors.primary),
+            borderSide:
+                BorderSide(color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
       ),
     );
   }
@@ -246,18 +250,21 @@ class _ExamContentState extends State<ExamContent>
             .toList(),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white38),
+            borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: AppColors.primary),
+            borderSide:
+                BorderSide(color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        dropdownColor: AppColors.background,
-        style: const TextStyle(color: Colors.white),
+        dropdownColor: Theme.of(context).colorScheme.surface,
+        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
       ),
     );
   }
@@ -285,7 +292,7 @@ class _ExamContentState extends State<ExamContent>
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -329,8 +336,10 @@ class _ExamContentState extends State<ExamContent>
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        onPressed: () => _openAddExamSheet(context),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        // onPressed: () => _openAddExamSheet(context),
+        onPressed: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => CreateExamScreen())),
         label: const Row(
           children: [
             Icon(Icons.add, color: Colors.white),

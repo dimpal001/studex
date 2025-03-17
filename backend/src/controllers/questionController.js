@@ -1,193 +1,143 @@
 const { PrismaClient } = require('@prisma/client')
 
+const fs = require('fs')
+const { promisify } = require('util')
+const unlinkAsync = promisify(fs.unlink)
+const TOKEN_LIMIT = 500
+
 const prisma = new PrismaClient()
+const OpenAI = require('openai')
+const convertImageToText = require('../functions/convertImageToText')
+const { error } = require('console')
+const openai = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  // apiKey: process.env.GPT_ACCESS_KEY,
+  apiKey: process.env.DEEPSEEK_KEY,
+})
 
 const askQuestion = async (request, response) => {
-  try {
-    const {
-      userId,
-      question,
-      subjectData = null,
-      classData = null,
-      marks = null,
-      language = null,
-    } = request.body.data
+  const {
+    userId,
+    question,
+    subjectData = null,
+    classData = null,
+    marks = null,
+    language = null,
+  } = request.body
 
-    const className = await prisma.class.findUnique({
-      where: { id: classData },
+  const image = request.file
+  let extractedText = ''
+  let finalQuestion = question
+
+  try {
+    if (!userId || (!question && !image)) {
+      return response
+        .status(400)
+        .json({ error: 'Question, image, or User data is missing' })
+    }
+
+    // if (question) {
+    //   return response
+    //     .status(400)
+    //     .json({ error: 'This feature is not allowed to your plan' })
+    // }
+
+    if (image) {
+      console.log('Image is there')
+      extractedText = await convertImageToText(image.path)
+      await unlinkAsync(image.path)
+      console.log(extractedText)
+
+      if (!extractedText.trim()) {
+        return response
+          .status(400)
+          .json({ error: 'Failed to extract text from image' })
+      }
+
+      finalQuestion =
+        extractedText.length > TOKEN_LIMIT
+          ? extractedText.substring(0, TOKEN_LIMIT)
+          : extractedText
+    }
+
+    const prompt = image
+      ? `Treat texts as question.Provide an optimized version and answer.
+      Extracted Text: "${finalQuestion}"
+      ${subjectData ? `Subject ${subjectData}` : ''}
+      ${classData ? `Class ${classData.name}` : ''}
+      ${marks ? `Marks ${marks}` : ''}
+      ${
+        language && language.toLowerCase() !== 'english' ? `in ${language}` : ''
+      }
+      Response should be in JSON format
+      {
+        "question": "Optimized question markdown",
+        "answer": "Markdown formatted answer"
+      }`
+      : `Optimize the given question and generate an answer.
+      Question "${finalQuestion}"
+      ${subjectData ? `Subject ${subjectData}` : ''}
+      ${classData ? `Class ${classData.name}` : ''}
+      ${marks ? `Marks ${marks}` : ''}
+      ${
+        language && language.toLowerCase() !== 'english' ? `in ${language}` : ''
+      }
+      Response should be in JSON format
+      {
+        "question": "Optimized version of the question",
+        "answer": "Markdown formatted answer"
+      }`
+
+    const aiResponse = await openai.chat.completions.create({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: 'You are Studex AI, powered by DeepSeek.' },
+        { role: 'user', content: prompt },
+      ],
     })
 
-    const questionPrompt = `make proper question ${
-      language ? `in ${language?.toLowerCase()}` : ''
-    }->${question}`
+    const responseContent = aiResponse.choices[0].message.content
+    console.log(responseContent)
+    const rawJson = responseContent.replace('```json\n', '').replace('```', '')
 
-    const answerPrompt = `${question}${subjectData ? `, ${subjectData}` : ''}${
-      className ? `, ${className?.name}` : ''
-    }${marks ? ` for ${marks} marks` : ''}${
-      language && language?.toLowerCase() !== 'english'
-        ? ` in ${language?.toLowerCase()} answer in markdown format`
-        : ''
-    }`
+    const questionData = JSON.parse(rawJson)
 
-    console.log(questionPrompt)
-    console.log(answerPrompt)
+    const result = await prisma.$transaction(async (tx) => {
+      const userQuestion = await tx.question.create({
+        data: {
+          userId,
+          content: questionData.question,
+          classId: classData?.id || null,
+          subjectId: subjectData?.id || null,
+          marks: marks || null,
+        },
+        include: { answers: true },
+      })
 
-    // const aiQuestionResponse = await askAi(questionPrompt)
-    // const aiAnswerResponse = await askAi(answerPrompt)
+      const questionAnswer = await tx.answer.create({
+        data: {
+          questionId: userQuestion.id,
+          content: questionData.answer,
+        },
+      })
 
-    // console.log(aiQuestionResponse)
-    // console.log(aiAnswerResponse)
+      return { ...userQuestion, answers: [questionAnswer] }
+    })
 
-    if (!userId || !question) {
-      return response.status(400).json({ error: 'Missing required fields' })
-    }
-
-    // const result = await prisma.$transaction(async (tx) => {
-    //   const userQuestion = await tx.question.create({
-    //     data: {
-    //       userId,
-    //       content: question,
-    //       boardId: boardData?.id || null,
-    //       classId: classData?.id || null,
-    //       subjectId: subjectData?.id || null,
-    //       marks: marks || null,
+    // const result = await prisma.question.findFirst({
+    //   select: {
+    //     id: true,
+    //     content: true,
+    //     answers: {
+    //       select: {
+    //         content: true,
+    //       },
     //     },
-    //     include: { answers: true },
-    //   })
-
-    //   const questionAnswer = await tx.answer.create({
-    //     data: {
-    //       questionId: userQuestion.id,
-    //       content:
-    //         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic',
-    //     },
-    //   })
-
-    //   return { ...userQuestion, answers: [questionAnswer] }
+    //   },
+    //   skip: 2,
     // })
 
-    // const resData = encryptData(result)
-
-    const data = {
-      question: `What is force?`,
-      answer: `# **Integration in Mathematics**
-
-## **1. Introduction**
-Integration is a fundamental concept in calculus that represents the process of finding the **integral** of a function. It is the reverse process of differentiation and is used to calculate areas, volumes, displacement, and many other physical quantities.
-
----
-
-## **2. Types of Integration**
-There are two main types of integrals:
-
-### **a. Indefinite Integral**
-- An **indefinite integral** represents a family of functions and includes a constant of integration **C**.
-- It is written as:
-
-  \[
-  \int f(x) \,dx = F(x) + C
-  \]
-
-  where \( F(x) \) is the **antiderivative** of \( f(x) \).
-
-### **b. Definite Integral**
-- A **definite integral** calculates the exact area under the curve between two limits \( a \) and \( b \).
-- It is written as:
-
-  \[
-  \int_{a}^{b} f(x) \,dx = F(b) - F(a)
-  \]
-
-  where \( F(x) \) is the antiderivative of \( f(x) \).
-
----
-
-## **3. Basic Integration Rules**
-Here are some common integration formulas:
-
-| Function \( f(x) \) | Integral \( \int f(x) \,dx \) |
-|---------------------|--------------------------------|
-| \( x^n \) (where \( n \neq -1 \)) | \( \frac{x^{n+1}}{n+1} + C \) |
-| \( e^x \) | \( e^x + C \) |
-| \( \sin x \) | \( -\cos x + C \) |
-| \( \cos x \) | \( \sin x + C \) |
-| \( \frac{1}{x} \) | \( \ln |x| + C \) |
-
----
-
-## **4. Applications of Integration**
-Integration is widely used in various fields, including:
-
-- **Physics**: Finding displacement, velocity, and acceleration.
-- **Engineering**: Calculating areas, volumes, and work done by a force.
-- **Economics**: Computing total cost, revenue, and profit.
-- **Biology**: Modeling population growth and decay.
-- **Statistics**: Probability distributions and expected values.
-
----
-
-## **5. Example Problems**
-### **Example 1: Indefinite Integral**
-Find:
-
-\[
-\int (3x^2 + 5) \,dx
-\]
-
-**Solution:**
-Using the power rule,
-
-\[
-\int 3x^2 \,dx = x^3, \quad \int 5 \,dx = 5x
-\]
-
-\[
-\Rightarrow x^3 + 5x + C
-\]
-
----
-
-### **Example 2: Definite Integral**
-Evaluate:
-
-\[
-\int_{1}^{3} (2x) \,dx
-\]
-
-**Solution:**
-Finding the antiderivative:
-
-\[
-\int 2x \,dx = x^2
-\]
-
-Applying limits:
-
-\[
-[3^2 - 1^2] = [9 - 1] = 8
-\]
-
-**Final Answer:** \( 8 \)
-
----
-
-## **6. Conclusion**
-Integration is a powerful mathematical tool used in various disciplines. Mastering different integration techniques allows solving complex real-world problems efficiently.
-
----
-
-## **7. Further Study**
-To deepen your understanding, explore:
-- **Integration by Parts**
-- **Partial Fraction Decomposition**
-- **Trigonometric Integrals**
-- **Improper Integrals**
-`,
-    }
-
-    const resData = data
-
-    return response.status(200).json({ resData })
+    return response.status(200).json({ resData: result })
   } catch (error) {
     console.error('Error:', error.message)
     return response.status(500).json({
@@ -197,18 +147,34 @@ To deepen your understanding, explore:
 }
 
 const getLatestQuestion = async (request, response) => {
+  const { userId, page = 0 } = request.query
+  console.log('Its calling : ', page)
   try {
-    const { userId } = request.body.data
-
     if (!userId) {
-      return response.status(400).json({ error: 'Missing required fields' })
+      return response.status(400).json({ error: 'User data is missing' })
     }
 
     const latestQuestions = await prisma.question.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      skip: 10 * page,
       take: 10,
-      include: { answers: true, subject: true, chapter: true },
+      select: {
+        id: true,
+        createdAt: true,
+        content: true,
+        marks: true,
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+        chapter: {
+          select: {
+            name: true,
+          },
+        },
+      },
     })
 
     return response.status(200).json({ resData: latestQuestions })
@@ -220,22 +186,76 @@ const getLatestQuestion = async (request, response) => {
   }
 }
 
-const getSubjectWiseQuestion = async (request, response) => {
+const getDetailQuestion = async (request, response) => {
+  const { questionId } = request.query
+  console.log('Its calling : ', questionId)
   try {
-    const { userId, subjectId } = request.body.data
-
-    if (!userId || !subjectId) {
-      return response.status(400).json({ error: 'Missing required fields' })
+    if (!questionId) {
+      return response.status(400).json({ error: 'Question data is missing' })
     }
+
+    const detailQuestion = await prisma.question.findUnique({
+      where: { id: questionId },
+      select: {
+        id: true,
+        createdAt: true,
+        content: true,
+        marks: true,
+        answers: true,
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+        chapter: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return response.status(200).json({ resData: detailQuestion })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed fetching questions.',
+    })
+  }
+}
+
+const getSubjectWiseQuestion = async (request, response) => {
+  const { userId, subjectId, page = 0 } = request.query
+  console.log(userId)
+  console.log(subjectId)
+  console.log(page)
+
+  try {
+    if (!userId || !subjectId) {
+      return response
+        .status(400)
+        .json({ error: 'User and Subject data are missing' })
+    }
+
+    const noOfQuestions = await prisma.question.count({
+      where: { userId, subjectId },
+    })
 
     const questions = await prisma.question.findMany({
       where: { userId, subjectId },
       orderBy: { createdAt: 'desc' },
+      skip: 10 * page,
       take: 10,
-      include: { answers: true, subject: true, chapter: true },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        subject: true,
+        chapter: true,
+      },
     })
 
-    return response.status(200).json({ resData: questions })
+    return response.status(200).json({ resData: questions, noOfQuestions })
   } catch (error) {
     console.error('Error:', error.message)
     return response.status(500).json({
@@ -245,11 +265,12 @@ const getSubjectWiseQuestion = async (request, response) => {
 }
 
 const getChapterWiseQuestion = async (request, response) => {
+  const { userId, chapterId } = request.query
   try {
-    const { userId, chapterId } = request.body.data
-
     if (!userId || !chapterId) {
-      return response.status(400).json({ error: 'Missing required fields' })
+      return response
+        .status(400)
+        .json({ error: 'User and Chapter data are missing' })
     }
 
     const questions = await prisma.question.findMany({
@@ -269,11 +290,12 @@ const getChapterWiseQuestion = async (request, response) => {
 }
 
 const getSearQuestion = async (request, response) => {
+  const { userId, query } = request.query
   try {
-    const { userId, query } = request.body.data
-
     if (!userId || !query) {
-      return response.status(400).json({ error: 'Missing required fields' })
+      return response
+        .status(400)
+        .json({ error: 'Query and User data are missing' })
     }
 
     const questions = await prisma.question.findMany({
@@ -314,12 +336,45 @@ const addToChapter = async (request, response) => {
       },
     })
 
-    const resData = {
-      question,
-      message: 'Question has been added',
+    const resData = { question }
+
+    return response
+      .status(200)
+      .json({ resData, message: 'Question has been added' })
+  } catch (error) {
+    console.error('Error:', error.message)
+    return response.status(500).json({
+      error: 'Failed adding question.',
+      details: error.message,
+    })
+  }
+}
+
+const moveToAnotherChapter = async (request, response) => {
+  const { id, chapterId } = request.body
+  console.log(id)
+  console.log(chapterId)
+  try {
+    if (!id || !chapterId) {
+      return response
+        .status(400)
+        .json({ error: 'Question and Chapter data are missing' })
     }
 
-    return response.status(200).json({ resData })
+    const question = await prisma.question.update({
+      where: {
+        id,
+      },
+      data: {
+        chapterId,
+      },
+    })
+
+    const resData = { question }
+
+    return response
+      .status(200)
+      .json({ resData, message: 'Question has been moved' })
   } catch (error) {
     console.error('Error:', error.message)
     return response.status(500).json({
@@ -332,8 +387,10 @@ const addToChapter = async (request, response) => {
 module.exports = {
   askQuestion,
   getLatestQuestion,
+  getDetailQuestion,
   getSubjectWiseQuestion,
   getChapterWiseQuestion,
   getSearQuestion,
   addToChapter,
+  moveToAnotherChapter,
 }

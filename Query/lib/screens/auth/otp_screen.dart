@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/auth/fill_password_screen.dart';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
 import 'package:pinput/pinput.dart';
@@ -146,16 +145,7 @@ class _OTPScreenState extends State<OTPScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.background,
-              AppColors.foreground.withOpacity(0.8),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: Theme.of(context).colorScheme.surface,
         child: Stack(
           children: [
             // Background Design Elements
@@ -167,7 +157,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                 ),
               ),
             ),
@@ -179,7 +169,8 @@ class _OTPScreenState extends State<OTPScreen> {
                 height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.15),
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
                 ),
               ),
             ),
@@ -199,10 +190,10 @@ class _OTPScreenState extends State<OTPScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    const Text(
+                    Text(
                       "Verify OTP",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -219,8 +210,8 @@ class _OTPScreenState extends State<OTPScreen> {
                     Text(
                       "Enter the 6-digit code sent to ${widget.phoneNumber}",
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
@@ -229,17 +220,12 @@ class _OTPScreenState extends State<OTPScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.2)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.2)),
                       ),
                       child: Pinput(
                         controller: _otpController,
@@ -247,43 +233,56 @@ class _OTPScreenState extends State<OTPScreen> {
                         defaultPinTheme: PinTheme(
                           width: 60,
                           height: 60,
-                          textStyle: const TextStyle(
+                          textStyle: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.3)),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary
+                                    .withOpacity(0.3)),
                           ),
                         ),
                         focusedPinTheme: PinTheme(
                           width: 60,
                           height: 60,
-                          textStyle: const TextStyle(
+                          textStyle: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
-                            border:
-                                Border.all(color: AppColors.primary, width: 2),
+                            border: Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2),
                           ),
                         ),
                         submittedPinTheme: PinTheme(
                           width: 60,
                           height: 60,
-                          textStyle: const TextStyle(
+                          textStyle: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.2),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
@@ -297,12 +296,16 @@ class _OTPScreenState extends State<OTPScreen> {
                       height: 55,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                           elevation: 8,
-                          shadowColor: AppColors.primary.withOpacity(0.5),
+                          shadowColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5),
                         ),
                         onPressed: _isLoading ? null : _verifyOTP,
                         child: _isLoading
@@ -332,16 +335,17 @@ class _OTPScreenState extends State<OTPScreen> {
                           _canResend
                               ? "Didn't receive OTP? "
                               : "Resend in $_resendTimer s",
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 16),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 16),
                         ),
                         if (_canResend)
                           GestureDetector(
                             onTap: _resendOTP,
-                            child: const Text(
+                            child: Text(
                               "Resend OTP",
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 decoration: TextDecoration.underline,
@@ -360,14 +364,16 @@ class _OTPScreenState extends State<OTPScreen> {
                         );
                       },
                       child: RichText(
-                        text: const TextSpan(
+                        text: TextSpan(
                           text: "Back to ",
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 16),
                           children: [
                             TextSpan(
                               text: "Login",
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

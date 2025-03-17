@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:my_flutter_app/screens/home/home_screen.dart';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
@@ -76,13 +75,13 @@ class _SplashScreenState extends State<SplashScreen>
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.foreground,
+                color: Theme.of(context).colorScheme.surfaceContainer,
               ),
               padding: const EdgeInsets.all(20),
               child: Icon(
                 Icons.school,
                 size: 60,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(height: 20),
@@ -100,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
             Text(
               'Your Learning Companion',
               style: TextStyle(
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -120,7 +119,8 @@ class _SplashScreenState extends State<SplashScreen>
                           opacity: _getOpacity(index),
                           child: CircleAvatar(
                             radius: 5,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                           ),
                         );
                       },

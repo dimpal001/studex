@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/chapter/chapter_section.dart';
 import 'package:my_flutter_app/screens/chapter/question_section.dart';
 
@@ -53,7 +52,7 @@ class _ChapterScreenState extends State<ChapterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           widget.subjectName,
@@ -63,7 +62,7 @@ class _ChapterScreenState extends State<ChapterScreen>
             fontSize: 22,
           ),
         ),
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         elevation: 0,
         actions: [
           IconButton(
@@ -80,7 +79,7 @@ class _ChapterScreenState extends State<ChapterScreen>
           Container(
             padding: EdgeInsets.only(left: 12, right: 12, bottom: 10),
             decoration: BoxDecoration(
-              color: AppColors.foreground,
+              color: Theme.of(context).colorScheme.surfaceContainer,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black12,
@@ -138,7 +137,9 @@ class _ChapterScreenState extends State<ChapterScreen>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : AppColors.background,
+            color: isActive
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(

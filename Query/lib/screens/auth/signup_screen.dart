@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/Alert.dart';
 import 'package:my_flutter_app/constants/api.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'dart:convert';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
 import 'package:my_flutter_app/screens/auth/otp_screen.dart';
@@ -96,19 +95,9 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.background,
-              AppColors.foreground.withOpacity(0.8),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: Theme.of(context).colorScheme.surface,
         child: Stack(
           children: [
-            // Background Design Elements
             Positioned(
               top: -50,
               left: -50,
@@ -117,7 +106,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                 ),
               ),
             ),
@@ -129,7 +118,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.15),
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.15),
                 ),
               ),
             ),
@@ -144,15 +134,16 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: SvgPicture.asset(
                         'assets/logo.svg',
                         height: 100,
-                        colorFilter: const ColorFilter.mode(
-                            Colors.white, BlendMode.srcIn),
+                        colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.onPrimary,
+                            BlendMode.srcIn),
                       ),
                     ),
                     const SizedBox(height: 40),
-                    const Text(
+                    Text(
                       "Get Started",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -166,11 +157,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    const Text(
+                    Text(
                       "Enter your phone number to receive an OTP.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
@@ -179,17 +170,12 @@ class _SignupScreenState extends State<SignupScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.2)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.2)),
                       ),
                       child: Column(
                         children: [
@@ -197,25 +183,33 @@ class _SignupScreenState extends State<SignupScreen> {
                             controller: _mobileController,
                             keyboardType: TextInputType.phone,
                             maxLength: 10,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 18),
                             decoration: InputDecoration(
                               labelText: 'Phone Number',
-                              labelStyle:
-                                  const TextStyle(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.phone_android,
-                                  color: Colors.white70),
+                              labelStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
+                              prefixIcon: Icon(Icons.phone_android,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
                               counterText: "",
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.05),
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withOpacity(0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                    color: AppColors.primary, width: 2),
+                                borderSide: BorderSide(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    width: 2),
                               ),
                             ),
                           ),
@@ -233,23 +227,27 @@ class _SignupScreenState extends State<SignupScreen> {
                               _agreeToTerms = value ?? false;
                             });
                           },
-                          activeColor: AppColors.primary,
-                          checkColor: Colors.white,
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          checkColor: Theme.of(context).colorScheme.onPrimary,
                         ),
                         Flexible(
                           child: RichText(
                             text: TextSpan(
                               text: "I agree to the ",
-                              style: const TextStyle(color: Colors.white70),
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
                               children: [
                                 WidgetSpan(
                                   child: GestureDetector(
                                     onTap: () =>
-                                        _launchURL("https://example.com/terms"),
-                                    child: const Text(
+                                        _launchURL("https://dimpaldas.in"),
+                                    child: Text(
                                       "Terms and Conditions",
                                       style: TextStyle(
-                                        color: AppColors.primary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                         fontWeight: FontWeight.bold,
                                         decoration: TextDecoration.underline,
                                       ),
@@ -268,24 +266,29 @@ class _SignupScreenState extends State<SignupScreen> {
                       height: 55,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                           elevation: 8,
-                          shadowColor: AppColors.primary.withOpacity(0.5),
+                          shadowColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5),
                         ),
                         onPressed: _isLoading ? null : _signUp,
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 "Send OTP",
                                 style: TextStyle(
                                   fontSize: 18,
@@ -305,14 +308,16 @@ class _SignupScreenState extends State<SignupScreen> {
                         );
                       },
                       child: RichText(
-                        text: const TextSpan(
+                        text: TextSpan(
                           text: "Already have an account? ",
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 16),
                           children: [
                             TextSpan(
                               text: "Log In",
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -323,10 +328,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 20),
                     GestureDetector(
                       onTap: () => _launchURL("https://example.com/privacy"),
-                      child: const Text(
+                      child: Text(
                         "Privacy Policy",
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           fontSize: 14,
                           decoration: TextDecoration.underline,
                         ),

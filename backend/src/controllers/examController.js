@@ -8,10 +8,9 @@ const openai = new OpenAI({
 })
 
 const createExam = async (request, response) => {
+  const { name, userId, subjectId, topic, duration, noOfQuestions } =
+    request.body
   try {
-    const { name, userId, subjectId, topic, duration, noOfQuestions } =
-      request.body
-
     if (
       !name ||
       !userId ||
@@ -23,64 +22,66 @@ const createExam = async (request, response) => {
       return response.status(400).json({ error: 'Missing required fields' })
     }
 
-    const subject = await prisma.subject.findUnique({
-      where: { id: subjectId },
-    })
-    if (!subject) {
-      return response.status(404).json({ error: 'Subject not found' })
-    }
+    // const subject = await prisma.subject.findUnique({
+    //   where: { id: subjectId },
+    // })
+    // if (!subject) {
+    //   return response.status(404).json({ error: 'Subject not found' })
+    // }
 
-    const prompt = `Generate ${noOfQuestions} multiple-choice questions on "${topic}" in ${subject.name} with 4 options and correct answers. Format: JSON [{"question": "", "options": ["", "", "", ""], "answer": ""}]`
+    // const prompt = `Generate ${noOfQuestions} multiple-choice questions on "${topic}" in ${subject.name} with 4 options and correct answers. Format: JSON [{"question": "", "options": ["", "", "", ""], "answer": ""}]`
 
-    const aiResponse = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-    })
+    // const aiResponse = await openai.chat.completions.create({
+    //   model: 'gpt-4o-mini',
+    //   messages: [{ role: 'user', content: prompt }],
+    // })
 
-    if (!aiResponse.choices || aiResponse.choices.length === 0) {
-      return response
-        .status(500)
-        .json({ error: 'Failed to generate questions' })
-    }
+    // if (!aiResponse.choices || aiResponse.choices.length === 0) {
+    //   return response
+    //     .status(500)
+    //     .json({ error: 'Failed to generate questions' })
+    // }
 
-    const responseContent = aiResponse.choices[0].message.content
-    const rawJson = responseContent.replace('```json\n', '').replace('```', '')
+    // const responseContent = aiResponse.choices[0].message.content
+    // const rawJson = responseContent.replace('```json\n', '').replace('```', '')
 
-    let questions
-    try {
-      questions = JSON.parse(rawJson)
-    } catch (err) {
-      return response.status(500).json({ error: 'Failed to parse response' })
-    }
+    // let questions
+    // try {
+    //   questions = JSON.parse(rawJson)
+    // } catch (err) {
+    //   return response.status(500).json({ error: 'Failed to parse response' })
+    // }
 
-    const exam = await prisma.exam.create({
-      data: {
-        userId,
-        name,
-        subjectId,
-        topic,
-        duration: parseInt(duration),
-        noOfQuestions: parseInt(noOfQuestions),
-      },
-    })
+    // const exam = await prisma.exam.create({
+    //   data: {
+    //     userId,
+    //     name,
+    //     subjectId,
+    //     topic,
+    //     duration: parseInt(duration),
+    //     noOfQuestions: parseInt(noOfQuestions),
+    //   },
+    // })
 
-    const examQuestions = questions.map((q) => ({
-      examId: exam.id,
-      question: q.question,
-      optionA: q.options[0],
-      optionB: q.options[1],
-      optionC: q.options[2],
-      optionD: q.options[3],
-      correctAns: q.answer,
-    }))
+    // const examQuestions = questions.map((q) => ({
+    //   examId: exam.id,
+    //   question: q.question,
+    //   optionA: q.options[0],
+    //   optionB: q.options[1],
+    //   optionC: q.options[2],
+    //   optionD: q.options[3],
+    //   correctAns: q.answer,
+    // }))
 
-    await prisma.examQuestion.createMany({
-      data: examQuestions,
-    })
+    // await prisma.examQuestion.createMany({
+    //   data: examQuestions,
+    // })
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
 
     return response.status(200).json({
       message: 'Exam created successfully',
-      exam,
+      // exam,
     })
   } catch (error) {
     console.error('Error:', error.message)
@@ -119,8 +120,6 @@ const fetchUpcomingExams = async (request, response) => {
       createdAt: exam.createdAt,
     }))
 
-    console.log(formattedExams)
-
     return response.status(200).json({ exams: formattedExams })
   } catch (error) {
     console.error('Error:', error.message)
@@ -153,8 +152,6 @@ const fetchPastExams = async (request, response) => {
         },
       },
     })
-
-    console.log(exams)
 
     const formattedExams = exams.map((exam) => ({
       id: exam.id,

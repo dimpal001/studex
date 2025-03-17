@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/api.dart';
 import 'package:my_flutter_app/constants/api_headers.dart';
 import 'dart:convert';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/error_component.dart';
 import 'package:my_flutter_app/screens/exam/examAttempt/exam_attempt_screen.dart';
 
@@ -52,7 +51,7 @@ class _StartExamScreenState extends State<StartExamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: FutureBuilder<Map<String, dynamic>>(
         future: _examFuture,
         builder: (context, snapshot) {
@@ -75,16 +74,16 @@ class _StartExamScreenState extends State<StartExamScreen> {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                backgroundColor: AppColors.foreground,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                 ),
-                title: const Text(
+                title: Text(
                   "Exam Details",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -98,7 +97,7 @@ class _StartExamScreenState extends State<StartExamScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.foreground,
+                        color: Theme.of(context).colorScheme.surfaceContainer,
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(30),
                           bottomRight: Radius.circular(30),
@@ -109,8 +108,8 @@ class _StartExamScreenState extends State<StartExamScreen> {
                         children: [
                           Text(
                             examData["name"],
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
                             ),
@@ -118,8 +117,11 @@ class _StartExamScreenState extends State<StartExamScreen> {
                           const SizedBox(height: 8),
                           Text(
                             "${examData["subject"]["name"]} • ${examData["topic"]}",
-                            style: const TextStyle(
-                              color: Colors.white70,
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withAlpha(170),
                               fontSize: 16,
                             ),
                           ),
@@ -150,10 +152,10 @@ class _StartExamScreenState extends State<StartExamScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "About this Exam",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -199,11 +201,12 @@ class _StartExamScreenState extends State<StartExamScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            elevation: 5,
+                            // elevation: 5,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -265,10 +268,11 @@ class _StartExamScreenState extends State<StartExamScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 25),
+          child: Icon(icon,
+              color: Theme.of(context).colorScheme.primary, size: 25),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -277,16 +281,16 @@ class _StartExamScreenState extends State<StartExamScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white70,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary.withAlpha(180),
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),

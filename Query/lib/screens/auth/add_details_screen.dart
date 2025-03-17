@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/Alert.dart';
 import 'package:my_flutter_app/constants/api.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/home/home_screen.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,10 +191,10 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Your Profile",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
@@ -204,7 +203,10 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                         Text(
                           "Let’s make it personal!",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.8),
                             fontSize: 16,
                           ),
                         ),
@@ -219,17 +221,26 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                   title: "Full Name",
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.foreground,
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextField(
                       controller: _fullNameController,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: 16),
                       decoration: InputDecoration(
-                        prefixIcon:
-                            const Icon(Icons.person, color: Colors.white70),
+                        prefixIcon: Icon(Icons.person,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.7)),
                         hintText: "Enter your full name",
-                        hintStyle: const TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.7)),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 16),
@@ -244,18 +255,28 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                   title: "Class",
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.foreground,
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: DropdownButtonFormField<String>(
                       value: _selectedClassId,
-                      hint: const Text("Select your class",
-                          style: TextStyle(color: Colors.white54)),
-                      dropdownColor: AppColors.foreground,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      hint: Text("Select your class",
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withOpacity(0.5))),
+                      dropdownColor:
+                          Theme.of(context).colorScheme.surfaceContainer,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: 16),
                       decoration: InputDecoration(
-                        prefixIcon:
-                            const Icon(Icons.class_, color: Colors.white70),
+                        prefixIcon: Icon(Icons.class_,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withOpacity(0.7)),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 16),
@@ -282,7 +303,7 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                   child: Container(
                     constraints: const BoxConstraints(maxHeight: 300),
                     decoration: BoxDecoration(
-                      color: AppColors.transparent,
+                      color: Colors.transparent,
                     ),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -308,23 +329,30 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                                 style: TextStyle(
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.white70,
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary
+                                          .withOpacity(0.7),
                                   fontWeight: isSelected
                                       ? FontWeight.bold
                                       : FontWeight.normal,
                                 ),
                               ),
                               backgroundColor: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.foreground,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainer,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                                 side: BorderSide(
                                   color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.foreground,
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainer,
                                 ),
                               ),
                             ),
@@ -342,15 +370,14 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                   height: 60,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      elevation: 8,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: _isLoading ? null : _saveDetails,
                     child: _isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
@@ -358,7 +385,7 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
                           )
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.save, color: Colors.white, size: 24),
                               SizedBox(width: 10),
                               Text(
@@ -387,8 +414,8 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.5,

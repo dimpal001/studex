@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/api.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/constants/bottom_nav_bar.dart';
-import 'package:my_flutter_app/constants/encryption.dart';
+import 'package:my_flutter_app/screens/home/recent_questions.dart';
 import 'package:my_flutter_app/screens/notification/notification_screen.dart';
 import 'package:my_flutter_app/screens/profile/profile_screen.dart';
 import 'package:my_flutter_app/screens/query/query_screen.dart';
@@ -54,24 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final userId = prefs.getString('userId');
     if (userId == null || userId.isEmpty) return;
 
-    final encryptedData =
-        Uri.encodeComponent(Encryption.encryptData({"userId": userId}));
-
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/user/get-subjects?data=$encryptedData'),
+        Uri.parse('$baseUrl/user/get-subjects?userId=$userId'),
         headers: {'Content-Type': 'application/json'},
       );
 
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
-        final decryptedResponse =
-            Encryption.decryptData(responseData["resData"]);
-        if (decryptedResponse == null ||
-            !decryptedResponse.containsKey("subjects") ||
-            decryptedResponse["subjects"] == null) return;
-
-        final subjectsData = decryptedResponse["subjects"];
+        final subjectsData = responseData["resData"];
         await prefs.setString('subjectsList', json.encode(subjectsData));
 
         setState(() {
@@ -99,8 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => QueryScreen()));
         },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.add, color: Colors.white),
         tooltip: 'Ask a Question',
       ),
     );
@@ -121,17 +111,17 @@ class HomeScreenContent extends StatelessWidget {
           "Studex",
           style: TextStyle(
             fontSize: 30,
-            color: AppColors.primary,
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.2,
           ),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, size: 28),
-            color: Colors.white70,
+            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
             onPressed: () {
               Navigator.push(
                   context,
@@ -148,10 +138,10 @@ class HomeScreenContent extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   radius: 18,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   child: Text(
                     fullName[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -166,11 +156,11 @@ class HomeScreenContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Welcome Banner
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -181,25 +171,29 @@ class HomeScreenContent extends StatelessWidget {
                           children: [
                             Text(
                               'Welcome, $fullName!',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'Explore your subjects and ask questions!',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white70,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary
+                                    .withAlpha(150),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.school,
-                          color: AppColors.primary, size: 40),
+                      Icon(Icons.school,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 40),
                     ],
                   ),
                 ),
@@ -212,16 +206,25 @@ class HomeScreenContent extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.foreground,
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      children: const [
-                        Icon(Icons.search, color: Colors.grey),
+                      children: [
+                        Icon(Icons.search,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimary
+                                .withAlpha(100)),
                         SizedBox(width: 12),
                         Text(
                           'Search question...',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withAlpha(100),
+                              fontSize: 16),
                         ),
                       ],
                     ),
@@ -238,14 +241,16 @@ class HomeScreenContent extends StatelessWidget {
                       title: 'Ask Question',
                       icon: Icons.question_answer,
                       route: QueryScreen(),
-                      color: const Color(0xFF463132),
+                      color:
+                          Theme.of(context).colorScheme.onPrimary.withAlpha(20),
                     ),
                     _buildQuickActionCard(
                       context,
                       title: 'My Subjects',
                       icon: Icons.menu_book,
                       route: SubjectScreen(),
-                      color: const Color(0xFF323146),
+                      color:
+                          Theme.of(context).colorScheme.onPrimary.withAlpha(30),
                     ),
                   ],
                 ),
@@ -257,72 +262,11 @@ class HomeScreenContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 5,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Card(
-                        color: AppColors.foreground.withOpacity(0.9),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: AppColors.primary,
-                                child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Sample Question ${index + 1}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Mathematics - Chapter ${index + 1}',
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                '${index + 1} hr ago',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                RecentQuestions(),
                 const SizedBox(height: 80),
               ],
             ),
@@ -345,7 +289,7 @@ class HomeScreenContent extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(12),
       child: Card(
-        color: AppColors.foreground,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           width: 160,
@@ -356,16 +300,17 @@ class HomeScreenContent extends StatelessWidget {
               CircleAvatar(
                 radius: 28,
                 backgroundColor: color,
-                child: Icon(icon, color: AppColors.primary, size: 28),
+                child: Icon(icon,
+                    color: Theme.of(context).colorScheme.primary, size: 28),
               ),
               const SizedBox(height: 12),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
             ],

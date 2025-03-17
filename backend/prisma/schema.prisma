@@ -59,6 +59,7 @@ model User {
   sharedQuestion    SharedQuestion[]
   challenge         Challenge[]
   plan              UserSubscription?
+  questionPaper     QuestionPaper[]
 }
 
 enum MateRequestStatus {
@@ -74,19 +75,20 @@ model UserInteraction {
   status      MateRequestStatus @default(PENDING)
   createdAt   DateTime          @default(now())
 
-  follower  User @relation(name: "UserFollower", fields: [followerId], references: [id])
-  following User @relation(name: "UserFollowing", fields: [followingId], references: [id])
+  follower  User @relation(name: "UserFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation(name: "UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
 }
 
 model Subject {
-  id          String        @id @default(cuid())
-  name        String
-  questions   Question[]
-  userSubject UserSubject[]
-  chapters    Chapter[]
-  Exam        Exam[]
+  id            String          @id @default(cuid())
+  name          String
+  questions     Question[]
+  userSubject   UserSubject[]
+  chapters      Chapter[]
+  Exam          Exam[]
+  QuestionPaper QuestionPaper[]
 }
 
 model Chapter {
@@ -130,11 +132,12 @@ model Otp {
 }
 
 model Class {
-  id        String     @id @default(cuid())
-  name      String
-  user      User[]
-  createdAt DateTime   @default(now())
-  Question  Question[]
+  id            String          @id @default(cuid())
+  name          String
+  user          User[]
+  createdAt     DateTime        @default(now())
+  question      Question[]
+  QuestionPaper QuestionPaper[]
 }
 
 model Question {
@@ -262,7 +265,7 @@ model Challenge {
   sender   User    @relation("ChallengeSent", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User    @relation("ChallengeReceived", fields: [receiverId], references: [id], onDelete: Cascade)
   exam     Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-  User     User?   @relation(fields: [userId], references: [id])
+  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String?
 }
 
@@ -270,4 +273,24 @@ enum ChallengeStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+model QuestionPaper {
+  id        String  @id @default(cuid())
+  name      String
+  userId    String
+  subjectId String
+  classId   String?
+  marks     Int?
+  language  String?
+  duration  Int?
+  topic     String
+  data      String  @db.Text
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  class   Class?  @relation(fields: [classId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

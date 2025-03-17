@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 
 class TabBarWidget extends StatefulWidget {
   final TabController tabController;
@@ -14,7 +13,6 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   @override
   void initState() {
     super.initState();
-    // Add listener to rebuild when tab changes
     widget.tabController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -27,7 +25,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: AppColors.foreground,
+        color: Theme.of(context).colorScheme.surfaceContainer,
       ),
       child: Padding(
         padding: const EdgeInsets.all(5),
@@ -78,13 +76,17 @@ class TabItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: isSelected ? AppColors.background : AppColors.transparent,
+            color: isSelected
+                ? Theme.of(context).colorScheme.surface
+                : Colors.transparent,
           ),
           child: Center(
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : Colors.grey,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),

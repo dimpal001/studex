@@ -8,11 +8,15 @@ const examRoutes = require('./routes/examRoutes')
 const friendRoutes = require('./routes/friendRoutes')
 const classRoutes = require('./routes/classRoutes')
 const subjectRoutes = require('./routes/subjectRoutes')
+const chapterRoutes = require('./routes/chapterRoutes')
+const questionPaperRoutes = require('./routes/questionPaperRoutes')
 
 const app = express()
 
 app.use(cors())
+app.use(express.json())
 app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: true }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/question', questionRoutes)
@@ -21,5 +25,7 @@ app.use('/api/exam', examRoutes)
 app.use('/api/class', classRoutes)
 app.use('/api/subject', subjectRoutes)
 app.use('/api/friend', friendRoutes)
+app.use('/api/chapter', chapterRoutes)
+app.use('/api/question-paper', questionPaperRoutes)
 
 module.exports = app

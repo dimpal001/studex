@@ -10,7 +10,7 @@ class PlansScreen extends StatelessWidget {
           "Our Plans",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surface, // Fixed
         actions: [
           IconButton(
             icon: Icon(Icons.more_vert),
@@ -21,50 +21,57 @@ class PlansScreen extends StatelessWidget {
         ],
       ),
       body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildPlanCard(
-                    title: "Free Plan",
-                    price: "₹0",
-                    features: [
-                      "10 Questions per Day",
-                      "No Priority Support",
-                      "No AI Enhancements"
-                    ],
-                    color: AppColors.foreground,
-                    onTap: () => _subscribeToPlan(context, "Free Plan"),
-                    isHideButton: true),
-                _buildPlanCard(
-                    title: "Standard Plan",
-                    price: "₹199",
-                    features: [
-                      "100 Questions per Day",
-                      "Faster Responses",
-                      "No AI Enhancements"
-                    ],
-                    color: AppColors.foreground,
-                    onTap: () => _subscribeToPlan(context, "Standard Plan"),
-                    isSolidButton: true),
-                _buildPlanCard(
-                  title: "Premium Plan",
-                  price: "₹499",
-                  features: [
-                    "Unlimited Questions",
-                    "Fastest AI Responses",
-                    "Priority Support"
-                  ],
-                  color: AppColors.foreground,
-                  onTap: () => _subscribeToPlan(context, "Premium Plan"),
-                ),
-              ],
-            ),
-          )),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildPlanCard(
+                context,
+                title: "Free Plan",
+                price: "₹0",
+                features: [
+                  "10 Questions per Day",
+                  "No Priority Support",
+                  "No AI Enhancements"
+                ],
+                color: Theme.of(context).colorScheme.surface,
+                onTap: () => _subscribeToPlan(context, "Free Plan"),
+                isHideButton: true,
+              ),
+              _buildPlanCard(
+                context,
+                title: "Standard Plan",
+                price: "₹199",
+                features: [
+                  "100 Questions per Day",
+                  "Faster Responses",
+                  "No AI Enhancements"
+                ],
+                color: Theme.of(context).colorScheme.surface,
+                onTap: () => _subscribeToPlan(context, "Standard Plan"),
+                isSolidButton: true,
+              ),
+              _buildPlanCard(
+                context,
+                title: "Premium Plan",
+                price: "₹499",
+                features: [
+                  "Unlimited Questions",
+                  "Fastest AI Responses",
+                  "Priority Support"
+                ],
+                color: Theme.of(context).colorScheme.surface,
+                onTap: () => _subscribeToPlan(context, "Premium Plan"),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildPlanCard({
+  Widget _buildPlanCard(
+    BuildContext context, {
     required String title,
     required String price,
     required List<String> features,
@@ -79,8 +86,9 @@ class PlansScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: AppColors.foreground),
+          borderRadius: BorderRadius.circular(10),
+          color: Theme.of(context).colorScheme.surface,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -102,17 +110,17 @@ class PlansScreen extends StatelessWidget {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: price, // Price text
+                      text: price,
                       style: TextStyle(
-                        fontSize: 22, // Larger font size for price
+                        fontSize: 22,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),
                     ),
                     TextSpan(
-                      text: ' /month', // Smaller "/month" text
+                      text: ' /month',
                       style: TextStyle(
-                        fontSize: 16, // Smaller font size
+                        fontSize: 16,
                         fontWeight: FontWeight.normal,
                         color: Colors.white70,
                       ),
@@ -129,8 +137,9 @@ class PlansScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4.0),
                         child: Row(
                           children: [
-                            const Icon(Icons.check,
-                                color: AppColors.primary, size: 18),
+                            Icon(Icons.check,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 18),
                             const SizedBox(width: 6),
                             Text(
                               feature,
@@ -150,22 +159,26 @@ class PlansScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onTap,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: isSolidButton
-                          ? AppColors.primary
-                          : AppColors.foreground,
-                      foregroundColor: color,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      side: !isSolidButton
-                          ? BorderSide(color: AppColors.primary, width: 1)
-                          : null),
+                    backgroundColor: isSolidButton
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surface,
+                    foregroundColor: color,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: !isSolidButton
+                        ? BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 1)
+                        : null,
+                  ),
                   child: Text("Subscribe",
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isSolidButton
-                              ? AppColors.white
-                              : AppColors.primary)),
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.primary)),
                 ),
               ),
           ],

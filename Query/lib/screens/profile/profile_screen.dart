@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
+import 'package:my_flutter_app/constants/confirm_modal.dart';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
+import 'package:my_flutter_app/screens/auth/signup_screen.dart';
 import 'package:my_flutter_app/screens/plans/plan_screen.dart';
+import 'package:my_flutter_app/screens/splash/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -57,29 +60,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withAlpha(200),
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          backgroundColor: AppColors.foreground,
-          title: const Text("Confirm Logout",
-              style: TextStyle(color: Colors.white)),
-          content: const Text("Are you sure you want to log out?",
-              style: TextStyle(color: Colors.white70)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel",
-                  style: TextStyle(color: AppColors.primary)),
-            ),
-            TextButton(
-              onPressed: () {
-                logout(context);
-              },
-              child: const Text("Logout", style: TextStyle(color: Colors.red)),
-            ),
-          ],
+        return CustomAlertDialog(
+          title: "Logout",
+          description: "Are you sure you want to log out?",
+          variant: Colors.red,
+          onConfirm: () => logout(context),
+          confirmText: "Logout",
+          cancelText: "Cancel",
         );
       },
     );
@@ -88,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showAcademicOptions(BuildContext context, String type) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.foreground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -116,7 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -154,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               setState(() => selectedClass = className);
             }
           },
-          selectedColor: AppColors.primary,
+          selectedColor: Theme.of(context).colorScheme.primary,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : Colors.white70,
           ),
@@ -191,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
             });
           },
-          selectedColor: AppColors.primary,
+          selectedColor: Theme.of(context).colorScheme.primary,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : Colors.white70,
           ),
@@ -216,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               setState(() => selectedLanguage = language);
             }
           },
-          selectedColor: AppColors.primary,
+          selectedColor: Theme.of(context).colorScheme.primary,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : Colors.white70,
           ),
@@ -234,11 +223,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           "Profile",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         actions: [
           IconButton(
               icon: const Icon(Icons.settings_outlined, size: 28),
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(180),
               onPressed: () {}),
         ],
       ),
@@ -251,21 +240,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.foreground,
+                  color: Theme.of(context).colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       child: Text(
                         fullName[0].toUpperCase(),
                         style: const TextStyle(
@@ -281,10 +263,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           Text(
                             fullName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -309,11 +291,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               _buildPremiumButton(context),
               const SizedBox(height: 24),
-              const Text("Academic Settings",
+              Text("Academic Settings",
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+                      color: Theme.of(context).colorScheme.onPrimary)),
               const SizedBox(height: 12),
               _buildSettingsCard([
                 _buildSettingItem(
@@ -339,11 +321,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ]),
               const SizedBox(height: 24),
-              const Text("App Settings",
+              Text("App Settings",
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+                      color: Theme.of(context).colorScheme.onPrimary)),
               const SizedBox(height: 12),
               _buildSettingsCard([
                 _buildToggleItem("Dark Mode", isDarkMode,
@@ -354,15 +336,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.notifications),
               ]),
               const SizedBox(height: 24),
-              const Text("Account",
+              Text("Account",
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+                      color: Theme.of(context).colorScheme.onPrimary)),
               const SizedBox(height: 12),
               _buildSettingsCard([
                 _buildSettingItem("Privacy Policy", null,
-                    icon: Icons.lock_outline, hasArrow: true),
+                    icon: Icons.lock_outline,
+                    hasArrow: true,
+                    onTap: () => launchUrl(Uri.parse('https://dimpaldas.in'))),
                 _buildSettingItem("Terms of Service", null,
                     icon: Icons.description, hasArrow: true),
               ]),
@@ -386,15 +370,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSettingsCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.foreground.withOpacity(0.95),
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(children: children),
     );
@@ -410,17 +387,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         highlightColor: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         child: ListTile(
-          leading: Icon(icon, color: Colors.white70, size: 24),
+          leading: Icon(icon,
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(180),
+              size: 24),
           title: Text(title,
-              style: const TextStyle(color: Colors.white, fontSize: 16)),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary.withAlpha(140),
+                  fontSize: 16)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (value != null)
                 Text(
                   value,
-                  style: const TextStyle(
-                      color: AppColors.primary,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 14),
                 ),
@@ -437,14 +418,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildToggleItem(String title, bool value, Function(bool) onChanged,
       {required IconData icon}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.white70, size: 24),
+      leading: Icon(icon,
+          color: Theme.of(context).colorScheme.onPrimary.withAlpha(180),
+          size: 24),
       title: Text(title,
-          style: const TextStyle(color: Colors.white, fontSize: 16)),
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(140),
+              fontSize: 16)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeTrackColor: AppColors.primary.withOpacity(0.8),
-        activeColor: AppColors.white,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
+        activeColor: Theme.of(context).colorScheme.onPrimary,
         inactiveThumbColor: Colors.grey,
         inactiveTrackColor: Colors.grey.withOpacity(0.5),
       ),

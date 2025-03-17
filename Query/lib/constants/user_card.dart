@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 
 class UserCard extends StatelessWidget {
   final String userId;
@@ -27,7 +26,7 @@ class UserCard extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.05)
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.05)
               : Colors.transparent,
         ),
         child: Row(
@@ -43,7 +42,7 @@ class UserCard extends StatelessWidget {
                   Text(
                     fullName,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -51,7 +50,10 @@ class UserCard extends StatelessWidget {
                   Text(
                     'Class: IX',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onPrimary
+                          .withAlpha(170),
                       fontSize: 14,
                     ),
                   ),
@@ -61,7 +63,9 @@ class UserCard extends StatelessWidget {
             Spacer(),
             Icon(
               isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected ? AppColors.primary : Colors.grey,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey,
             ),
           ],
         ),

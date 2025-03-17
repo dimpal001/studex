@@ -108,7 +108,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           style: TextStyle(
               fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: AppColors.foreground,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -157,7 +157,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.foreground.withOpacity(0.9),
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainer
+                    .withOpacity(0.9),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -180,7 +183,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: unreadCount > 0 ? AppColors.primary : Colors.grey,
+                      color: unreadCount > 0
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -238,8 +243,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             margin: const EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 16),
                             color: notification['read']
-                                ? AppColors.foreground.withOpacity(0.9)
-                                : AppColors.foreground.withOpacity(0.6),
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainer
+                                    .withOpacity(0.9)
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainer
+                                    .withOpacity(0.6),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15)),
                             child: ListTile(
@@ -249,7 +260,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   notification['image'] ??
                                       'assets/avatars/default.png',
                                 ),
-                                backgroundColor: AppColors.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                               ),
                               title: Text(
                                 notification['title'] ?? '',
@@ -282,16 +294,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       fontSize: 12,
                                       color: notification['read']
                                           ? Colors.grey
-                                          : AppColors.primary,
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                     ),
                                   ),
                                   if (!notification['read'])
                                     GestureDetector(
                                       onTap: () => markAsRead(index),
-                                      child: const Padding(
+                                      child: Padding(
                                         padding: EdgeInsets.only(top: 4),
                                         child: Icon(Icons.mark_email_read,
-                                            size: 18, color: AppColors.primary),
+                                            size: 18,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary),
                                       ),
                                     ),
                                 ],

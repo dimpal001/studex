@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 import 'package:my_flutter_app/screens/chapter/chapter_screen.dart';
 
 class SubjectCard extends StatelessWidget {
@@ -51,44 +50,52 @@ class SubjectCard extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(10),
       child: Card(
-        color: AppColors.foreground,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(getSubjectIcon(), color: Colors.red, size: 28),
-                  SizedBox(width: 8),
+                  Icon(getSubjectIcon(),
+                      color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 8),
                   Text(
                     name,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white70,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Icon(Icons.arrow_forward_ios,
-                      color: Colors.white60, size: 18),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onPrimary
+                          .withAlpha(150),
+                      size: 18),
                 ],
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 "$chapters Chapters • $topics Topics",
-                style: TextStyle(color: Colors.white60, fontSize: 14),
+                style: TextStyle(
+                    color:
+                        Theme.of(context).colorScheme.onPrimary.withAlpha(170),
+                    fontSize: 14),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
-                spacing: 12,
                 children: [
-                  _infoBox("Progress", "$progress%"),
-                  _infoBox("Questions", "$questions"),
+                  _infoBox(context, "Progress", "$progress%"),
+                  const SizedBox(width: 12),
+                  _infoBox(context, "Questions", "$questions"),
                 ],
               ),
             ],
@@ -98,11 +105,11 @@ class SubjectCard extends StatelessWidget {
     );
   }
 
-  Widget _infoBox(String title, String value) {
+  Widget _infoBox(BuildContext context, String title, String value) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -110,13 +117,15 @@ class SubjectCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(color: Colors.white54, fontSize: 12),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
+                fontSize: 12),
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           Text(
             value,
             style: TextStyle(
-              color: Colors.white70,
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
