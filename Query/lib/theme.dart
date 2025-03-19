@@ -12,6 +12,7 @@ class AppThemes {
     ),
     colorScheme: ColorScheme.light(
       primary: AppColors.lightPrimary,
+      secondary: AppColors.lightSecondary,
       surface: AppColors.lightBackground,
       surfaceContainer: AppColors.lightForeground,
       onPrimary: AppColors.lightText1,
@@ -28,6 +29,7 @@ class AppThemes {
     ),
     colorScheme: ColorScheme.dark(
       primary: AppColors.darkPrimary,
+      secondary: AppColors.darkSecondary,
       surface: AppColors.darkBackground,
       surfaceContainer: AppColors.darkForeground,
       onPrimary: AppColors.darkText1,

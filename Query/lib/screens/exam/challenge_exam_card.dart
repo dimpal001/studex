@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class ChallengeExamCard extends StatelessWidget {
   final String title, subtitle, duration, questions, timeLeft;
 
-  ChallengeExamCard({
+  const ChallengeExamCard({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.duration,
@@ -56,7 +57,7 @@ class ChallengeExamCard extends StatelessWidget {
                               .withAlpha(120),
                           size: 15),
                       SizedBox(width: 5),
-                      Text("$duration",
+                      Text(duration,
                           style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme
@@ -74,7 +75,7 @@ class ChallengeExamCard extends StatelessWidget {
                               .withAlpha(120),
                           size: 15),
                       SizedBox(width: 5),
-                      Text("$questions",
+                      Text(questions,
                           style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme

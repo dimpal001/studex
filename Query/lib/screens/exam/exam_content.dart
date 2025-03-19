@@ -24,8 +24,6 @@ class _ExamContentState extends State<ExamContent>
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _topicController = TextEditingController();
 
-  String? _selectedSubject;
-  String? _selectedLanguage;
   List<Map<String, dynamic>> subjects = [];
   final List<Map<String, dynamic>> languages = [
     {"id": 1, "name": "English"},
@@ -106,183 +104,6 @@ class _ExamContentState extends State<ExamContent>
     }
   }
 
-  void _openAddExamSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      isScrollControlled: true,
-      builder: (context) => _buildExamForm(context),
-    );
-  }
-
-  Widget _buildExamForm(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        top: 20,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 50,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Create New Exam",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimary),
-            ),
-            const SizedBox(height: 15),
-            _buildTextField(_examNameController, "Exam Name"),
-            _buildDropdown(
-              label: "Select Subject",
-              value: _selectedSubject,
-              items: subjects,
-              onChanged: (value) => setState(() => _selectedSubject = value),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                      _noOfQuestionsController, "No. of Questions",
-                      isNumeric: true),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildTextField(_totalMarksController, "Total Marks",
-                      isNumeric: true),
-                ),
-              ],
-            ),
-            _buildDropdown(
-              label: "Select Language",
-              value: _selectedLanguage,
-              items: languages,
-              onChanged: (value) => setState(() => _selectedLanguage = value),
-            ),
-            _buildTextField(_topicController, "Topic"),
-            _buildTextField(_durationController, "Duration (in minutes)",
-                isNumeric: true),
-            const SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_examNameController.text.trim().isNotEmpty) {
-                    Navigator.pop(context);
-                    _createExamFun();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text("Add Exam",
-                    style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label,
-      {bool isNumeric = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: TextField(
-        controller: controller,
-        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                BorderSide(color: Theme.of(context).colorScheme.primary),
-          ),
-        ),
-        style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String label,
-    required String? value,
-    required List<Map<String, dynamic>> items,
-    required void Function(String?) onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        onChanged: onChanged,
-        items: items
-            .map((item) => DropdownMenuItem(
-                  value: item["id"].toString(),
-                  child: Text(item["name"]),
-                ))
-            .toList(),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                BorderSide(color: Theme.of(context).colorScheme.primary),
-          ),
-        ),
-        dropdownColor: Theme.of(context).colorScheme.surface,
-        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-      ),
-    );
-  }
-
-  void _createExamFun() {
-    print('');
-
-    _examNameController.clear();
-    _noOfQuestionsController.clear();
-    _totalMarksController.clear();
-    _durationController.clear();
-    _topicController.clear();
-    setState(() {
-      _selectedSubject = null;
-      _selectedLanguage = null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -292,7 +113,7 @@ class _ExamContentState extends State<ExamContent>
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -311,9 +132,7 @@ class _ExamContentState extends State<ExamContent>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // Upcoming Exams
                   UpcomingExamCard(),
-                  // Challenge Exams
                   ListView.builder(
                     itemCount: challengeExams.length,
                     itemBuilder: (context, index) => Padding(
@@ -327,7 +146,6 @@ class _ExamContentState extends State<ExamContent>
                       ),
                     ),
                   ),
-                  // Past Exams
                   PastExamScreen()
                 ],
               ),

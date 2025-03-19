@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'question_card.dart';
 
 class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({super.key});
+
   @override
   _HistoryScreenState createState() => _HistoryScreenState();
 }
@@ -93,7 +95,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             "Questions",
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
           ),
-          backgroundColor: colorScheme.surfaceContainer,
+          backgroundColor: colorScheme.surface,
+          surfaceTintColor: colorScheme.surfaceContainer,
         ),
         body: Skeletonizer(
           enabled: isLoading,

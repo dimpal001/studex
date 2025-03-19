@@ -92,18 +92,16 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Row(
           children: [
-            Icon(Icons.search,
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
+            Icon(Icons.search, color: Theme.of(context).colorScheme.onPrimary),
             SizedBox(width: 8),
             Expanded(
               child: TextField(
                 controller: _searchController,
-                style: TextStyle(
-                    color:
-                        Theme.of(context).colorScheme.onPrimary.withAlpha(170)),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                 decoration: InputDecoration(
                   hintText: 'Search users...',
                   hintStyle: TextStyle(
@@ -130,10 +128,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
                     key: ValueKey(isTextEmpty ? 'more_vert' : 'close'),
                     icon: Icon(
                       isTextEmpty ? Icons.more_vert : Icons.close,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onPrimary
-                          .withAlpha(170),
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                     onPressed: isTextEmpty ? null : _clearSearch,
                   ),
@@ -142,6 +137,14 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
             },
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1), // Border height
+          child: Container(
+            color:
+                Theme.of(context).colorScheme.surfaceContainer, // Border color
+            height: 1,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),

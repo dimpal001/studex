@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class UpcomingExamCard extends StatefulWidget {
+  const UpcomingExamCard({super.key});
+
   @override
   _UpcomingExamCardState createState() => _UpcomingExamCardState();
 }
@@ -64,16 +66,6 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
     }
   }
 
-  void _openShareBottomDrawer(BuildContext context, String examId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return ShareExamBottomDrawer(examId: examId);
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,13 +73,10 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
         future: _examsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show skeleton loader while waiting for data
             return SkeletonLoader(padding: EdgeInsets.all(0));
           } else if (snapshot.hasError) {
-            // Show error message if data fetch fails
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            // Show message if no exams are available
             return Center(
               child: Text(
                 "No exams available.",
@@ -108,8 +97,12 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
               return Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border.all(
+                      color:
+                          Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+                      width: 0.5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,10 +112,7 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
                         Text(
                           exam['name'],
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimary
-                                .withAlpha(180),
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -209,7 +199,7 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
                                     color:
                                         Theme.of(context).colorScheme.primary),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                               onPressed: () {
@@ -233,14 +223,6 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.share,
-                                  color: Theme.of(context).colorScheme.primary),
-                              onPressed: () {
-                                _openShareBottomDrawer(context, exam["id"]);
-                              },
-                            ),
                           ],
                         ),
                       ],
@@ -259,8 +241,7 @@ class _UpcomingExamCardState extends State<UpcomingExamCard> {
 class ShareExamBottomDrawer extends StatefulWidget {
   final String examId;
 
-  const ShareExamBottomDrawer({Key? key, required this.examId})
-      : super(key: key);
+  const ShareExamBottomDrawer({super.key, required this.examId});
 
   @override
   _ShareExamBottomDrawerState createState() => _ShareExamBottomDrawerState();

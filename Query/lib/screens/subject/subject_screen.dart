@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SubjectScreen extends StatefulWidget {
+  const SubjectScreen({super.key});
+
   @override
   _SubjectScreenState createState() => _SubjectScreenState();
 }
@@ -89,7 +91,7 @@ class _SubjectScreenState extends State<SubjectScreen> {
           "Subjects",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           IconButton(
             icon: Icon(Icons.more_vert),
@@ -101,26 +103,40 @@ class _SubjectScreenState extends State<SubjectScreen> {
       ),
       body: isLoading
           ? Skeletonizer(
-              child: ListView.builder(
-                  padding: EdgeInsets.all(10),
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return SubjectCard(
-                      id: '01',
-                      name: 'Unknown',
-                      chapters: 20,
-                      topics: 20,
-                      questions: 20,
-                      progress: 50,
-                    );
-                  }))
+              child: GridView.builder(
+                padding: const EdgeInsets.all(10),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.03,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                ),
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  return SubjectCard(
+                    id: '01',
+                    name: 'Unknown',
+                    chapters: 20,
+                    topics: 20,
+                    questions: 20,
+                    progress: 50,
+                  );
+                },
+              ),
+            )
           : errorMessage.isNotEmpty
               ? ErrorComponent(
                   message: 'Something went wrong',
                   onReload: getSubjectsFromAPI,
                 )
-              : ListView.builder(
-                  padding: EdgeInsets.all(10),
+              : GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.03,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                  ),
                   itemCount: subjectList.length,
                   itemBuilder: (context, index) {
                     final subject = subjectList[index];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_app/constants/api.dart';
+import 'package:my_flutter_app/constants/custom_bottom_sheet.dart';
 import 'package:my_flutter_app/constants/custom_snackbar.dart';
 import 'package:my_flutter_app/screens/chapter/chapter_card.dart';
 import 'dart:convert';
@@ -26,7 +27,7 @@ class Subject {
 class ChapterSection extends StatefulWidget {
   final String subjectId;
 
-  const ChapterSection({Key? key, required this.subjectId}) : super(key: key);
+  const ChapterSection({super.key, required this.subjectId});
 
   @override
   _ChapterSectionState createState() => _ChapterSectionState();
@@ -230,340 +231,298 @@ class _ChapterSectionState extends State<ChapterSection> {
   }
 
   void _openAddChapterSheet(BuildContext context) {
-    showModalBottomSheet(
+    CustomBottomSheet.show(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      isScrollControlled: true,
-      builder: (context) {
-        bool isLoading = false;
-        String? errorMessage;
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          bool isLoading = false;
+          String? errorMessage;
 
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Future<void> _submitChapter() async {
-              String newChapterName = _chapterNameController.text.trim();
+          Future<void> submitChapter() async {
+            String newChapterName = _chapterNameController.text.trim();
 
-              if (newChapterName.isEmpty) {
-                setModalState(
-                    () => errorMessage = "Chapter name cannot be empty");
-                return;
-              }
-
-              setModalState(() {
-                isLoading = true;
-                errorMessage = null;
-              });
-
-              try {
-                await _addChapter(newChapterName);
-                setModalState(() {
-                  isLoading = false;
-                });
-                _chapterNameController.clear();
-                Navigator.pop(context);
-                CustomSnackbar.show(context,
-                    message: "Chapter added successfully",
-                    variant: SnackbarVariant.success);
-              } catch (e) {
-                setModalState(() {
-                  isLoading = false;
-                  errorMessage = "Failed to add chapter: ${e.toString()}";
-                });
-              }
+            if (newChapterName.isEmpty) {
+              setModalState(
+                  () => errorMessage = "Chapter name cannot be empty");
+              return;
             }
 
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                top: 20,
+            setModalState(() {
+              isLoading = true;
+              errorMessage = null;
+            });
+
+            try {
+              await _addChapter(newChapterName);
+              setModalState(() {
+                isLoading = false;
+              });
+              _chapterNameController.clear();
+              Navigator.pop(context);
+              CustomSnackbar.show(context,
+                  message: "Chapter added successfully",
+                  variant: SnackbarVariant.success);
+            } catch (e) {
+              setModalState(() {
+                isLoading = false;
+                errorMessage = "Failed to add chapter: ${e.toString()}";
+              });
+            }
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Add New Chapter",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Add New Chapter",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              const SizedBox(height: 15),
+              TextField(
+                controller: _chapterNameController,
+                decoration: InputDecoration(
+                  labelText: "Chapter Name",
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _chapterNameController,
-                    decoration: InputDecoration(
-                      labelText: "Chapter Name",
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white38),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
-                    ),
-                  ],
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _submitChapter,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text("Add Chapter",
-                              style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
+                ),
+                style: const TextStyle(color: Colors.white),
               ),
-            );
-          },
-        );
-      },
+              if (errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ],
+              const SizedBox(height: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : submitChapter,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Add Chapter",
+                          style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   void _showEditChapterModal(BuildContext context, dynamic chapter) {
     _chapterNameController.text = chapter['name'];
 
-    showModalBottomSheet(
+    CustomBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      builder: (context) {
-        bool isLoading = false;
-        String? errorMessage;
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          bool isLoading = false;
+          String? errorMessage;
 
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                top: 20,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Edit Chapter",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Edit Chapter",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              const SizedBox(height: 15),
+              TextField(
+                controller: _chapterNameController,
+                decoration: InputDecoration(
+                  labelText: "Chapter Name",
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _chapterNameController,
-                    decoration: InputDecoration(
-                      labelText: "Chapter Name",
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white38),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  if (errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(
-                        errorMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 14),
-                      ),
-                    ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              setModalState(() => isLoading = true);
-                              try {
-                                await _updateChapter(
-                                    chapter['id'], _chapterNameController.text);
-                                Navigator.pop(context);
-                                CustomSnackbar.show(context,
-                                    message: "Chapter updated successfully",
-                                    variant: SnackbarVariant.success);
-                              } catch (e) {
-                                setModalState(
-                                    () => errorMessage = e.toString());
-                              } finally {
-                                setModalState(() => isLoading = false);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Update",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                    ),
-                  ),
-                ],
+                ),
+                style: const TextStyle(color: Colors.white),
               ),
-            );
-          },
-        );
-      },
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 14),
+                  ),
+                ),
+              const SizedBox(height: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          setModalState(() => isLoading = true);
+                          try {
+                            await _updateChapter(
+                                chapter['id'], _chapterNameController.text);
+                            Navigator.pop(context);
+                            CustomSnackbar.show(context,
+                                message: "Chapter updated successfully",
+                                variant: SnackbarVariant.success);
+                          } catch (e) {
+                            setModalState(() => errorMessage = e.toString());
+                          } finally {
+                            setModalState(() => isLoading = false);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Update",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   void _showMoveChapterModal(BuildContext context, dynamic chapter) {
     String? selectedSubjectId = widget.subjectId;
 
-    showModalBottomSheet(
+    CustomBottomSheet.show(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      builder: (context) {
-        bool isLoading = false;
-        String? errorMessage;
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          bool isLoading = false;
+          String? errorMessage;
 
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Move to Subject",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  DropdownButtonFormField<String>(
-                    value: selectedSubjectId,
-                    items: subjects
-                        .map((subject) => DropdownMenuItem(
-                              value: subject.id,
-                              child: Text(
-                                subject.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (value) =>
-                        setModalState(() => selectedSubjectId = value),
-                    decoration: InputDecoration(
-                      labelText: "Select Subject",
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.white38),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    dropdownColor:
-                        Theme.of(context).colorScheme.surfaceContainer,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  if (errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(
-                        errorMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 14),
-                      ),
-                    ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              setModalState(() => isLoading = true);
-                              try {
-                                await _moveChapter(
-                                    chapter['id'], selectedSubjectId!);
-                                Navigator.pop(context);
-                                CustomSnackbar.show(context,
-                                    message: "Chapter moved successfully",
-                                    variant: SnackbarVariant.success);
-                              } catch (e) {
-                                setModalState(
-                                    () => errorMessage = e.toString());
-                              } finally {
-                                setModalState(() => isLoading = false);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Update",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                    ),
-                  ),
-                ],
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Move to Subject",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            );
-          },
-        );
-      },
+              const SizedBox(height: 15),
+              DropdownButtonFormField<String>(
+                value: selectedSubjectId,
+                items: subjects
+                    .map((subject) => DropdownMenuItem(
+                          value: subject.id,
+                          child: Text(
+                            subject.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (value) =>
+                    setModalState(() => selectedSubjectId = value),
+                decoration: InputDecoration(
+                  labelText: "Select Subject",
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+                dropdownColor: Theme.of(context).colorScheme.surfaceContainer,
+                style: const TextStyle(color: Colors.white),
+              ),
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 14),
+                  ),
+                ),
+              const SizedBox(height: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          setModalState(() => isLoading = true);
+                          try {
+                            await _moveChapter(
+                                chapter['id'], selectedSubjectId!);
+                            Navigator.pop(context);
+                            CustomSnackbar.show(context,
+                                message: "Chapter moved successfully",
+                                variant: SnackbarVariant.success);
+                          } catch (e) {
+                            setModalState(() => errorMessage = e.toString());
+                          } finally {
+                            setModalState(() => isLoading = false);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Update",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -653,25 +612,26 @@ class _ChapterSectionState extends State<ChapterSection> {
         else
           Skeletonizer(
             enabled: isLoading,
-            child: ListView.builder(
+            child: GridView.builder(
               padding: const EdgeInsets.only(top: 10, bottom: 80),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.4,
+                crossAxisSpacing: 0,
+                mainAxisSpacing: 0,
+              ),
               itemCount: isLoading ? 4 : chapters.length,
               itemBuilder: (context, index) {
                 if (isLoading) {
-                  return Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const ListTile(
-                      contentPadding: EdgeInsets.all(15),
-                      leading: CircleAvatar(child: Text("0")),
-                      title: Text('Loading...'),
-                      subtitle: Text("Loading..."),
-                      trailing: Icon(Icons.arrow_forward_ios),
-                    ),
+                  final dummyChapter = {
+                    'name': 'Loading...',
+                    'questions': 0,
+                    'progress': '0%',
+                  };
+                  return ChapterCard(
+                    index: index,
+                    chapter: dummyChapter,
+                    onTap: () {},
                   );
                 }
                 return ChapterCard(

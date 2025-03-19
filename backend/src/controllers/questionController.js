@@ -36,12 +36,6 @@ const askQuestion = async (request, response) => {
         .json({ error: 'Question, image, or User data is missing' })
     }
 
-    // if (question) {
-    //   return response
-    //     .status(400)
-    //     .json({ error: 'This feature is not allowed to your plan' })
-    // }
-
     if (image) {
       console.log('Image is there')
       extractedText = await convertImageToText(image.path)
@@ -60,29 +54,17 @@ const askQuestion = async (request, response) => {
           : extractedText
     }
 
-    const prompt = image
-      ? `Treat texts as question.Provide an optimized version and answer.
-      Extracted Text: "${finalQuestion}"
-      ${subjectData ? `Subject ${subjectData}` : ''}
-      ${classData ? `Class ${classData.name}` : ''}
-      ${marks ? `Marks ${marks}` : ''}
+    const prompt = `Optimize the given question and generate an answer.
+      Question: "${finalQuestion}"
+      ${subjectData ? `Subject: ${subjectData}` : ''}
+      ${classData ? `Class: ${classData.name}` : ''}
+      ${marks ? `Marks: ${marks}` : ''}
       ${
-        language && language.toLowerCase() !== 'english' ? `in ${language}` : ''
+        language && language.toLowerCase() !== 'english'
+          ? `Language: ${language}`
+          : ''
       }
-      Response should be in JSON format
-      {
-        "question": "Optimized question markdown",
-        "answer": "Markdown formatted answer"
-      }`
-      : `Optimize the given question and generate an answer.
-      Question "${finalQuestion}"
-      ${subjectData ? `Subject ${subjectData}` : ''}
-      ${classData ? `Class ${classData.name}` : ''}
-      ${marks ? `Marks ${marks}` : ''}
-      ${
-        language && language.toLowerCase() !== 'english' ? `in ${language}` : ''
-      }
-      Response should be in JSON format
+      Respond in JSON format:
       {
         "question": "Optimized version of the question",
         "answer": "Markdown formatted answer"
@@ -97,10 +79,25 @@ const askQuestion = async (request, response) => {
     })
 
     const responseContent = aiResponse.choices[0].message.content
-    console.log(responseContent)
-    const rawJson = responseContent.replace('```json\n', '').replace('```', '')
+    console.log('Raw AI Response:', responseContent)
 
-    const questionData = JSON.parse(rawJson)
+    const rawJson = responseContent
+      .replace(/```json\s*/g, '')
+      .replace(/```/g, '')
+
+    let questionData
+    try {
+      questionData = JSON.parse(rawJson)
+    } catch (err) {
+      console.error('JSON Parsing Error:', err.message, 'Response:', rawJson)
+      return response.status(500).json({ error: 'Invalid JSON format from AI' })
+    }
+
+    if (!questionData?.question || !questionData?.answer) {
+      return response
+        .status(500)
+        .json({ error: 'AI response is missing data.' })
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       const userQuestion = await tx.question.create({
@@ -123,19 +120,6 @@ const askQuestion = async (request, response) => {
 
       return { ...userQuestion, answers: [questionAnswer] }
     })
-
-    // const result = await prisma.question.findFirst({
-    //   select: {
-    //     id: true,
-    //     content: true,
-    //     answers: {
-    //       select: {
-    //         content: true,
-    //       },
-    //     },
-    //   },
-    //   skip: 2,
-    // })
 
     return response.status(200).json({ resData: result })
   } catch (error) {

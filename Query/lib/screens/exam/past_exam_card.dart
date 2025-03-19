@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:skeletonizer/skeletonizer.dart';
 
 class PastExamScreen extends StatefulWidget {
+  const PastExamScreen({super.key});
+
   @override
   _PastExamScreenState createState() => _PastExamScreenState();
 }
@@ -114,10 +116,15 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                   margin: const EdgeInsets.only(bottom: 16),
                                   padding: EdgeInsets.all(5),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary
+                                            .withAlpha(50),
+                                        width: 1),
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
@@ -144,7 +151,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                                     strokeWidth: 6,
                                                     backgroundColor: Colors
                                                         .white
-                                                        .withOpacity(0.2),
+                                                        .withAlpha(80),
                                                     valueColor:
                                                         AlwaysStoppedAnimation(
                                                             scoreColor),
@@ -191,7 +198,6 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 16),
-                                        // View Details Button
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Theme.of(context)
@@ -199,7 +205,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
                                                 .surfaceContainer,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(8),
                                               side: BorderSide(
                                                   color: Theme.of(context)
                                                       .colorScheme

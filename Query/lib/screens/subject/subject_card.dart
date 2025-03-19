@@ -10,14 +10,14 @@ class SubjectCard extends StatelessWidget {
   final int progress;
 
   const SubjectCard({
-    Key? key,
+    super.key,
     required this.id,
     required this.name,
     required this.chapters,
     required this.topics,
     required this.questions,
     required this.progress,
-  }) : super(key: key);
+  });
 
   IconData getSubjectIcon() {
     switch (name.toLowerCase()) {
@@ -48,89 +48,58 @@ class SubjectCard extends StatelessWidget {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(10),
-      child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: (MediaQuery.of(context).size.width - 30) / 2,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+            width: 1,
+          ),
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(getSubjectIcon(),
-                      color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onPrimary
-                          .withAlpha(150),
-                      size: 18),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "$chapters Chapters • $topics Topics",
-                style: TextStyle(
-                    color:
-                        Theme.of(context).colorScheme.onPrimary.withAlpha(170),
-                    fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _infoBox(context, "Progress", "$progress%"),
-                  const SizedBox(width: 12),
-                  _infoBox(context, "Questions", "$questions"),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _infoBox(BuildContext context, String title, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
-                fontSize: 12),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+        margin: const EdgeInsets.all(5),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              getSubjectIcon(),
+              color: Theme.of(context).colorScheme.primary,
+              size: 40,
             ),
-          ),
-        ],
+            const SizedBox(height: 5),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              "$chapters Chapters • $topics Topics",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(170),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Text(
+                  "Progress $progress%",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -88,16 +88,6 @@ class _CustomAlertDialogState extends State<CustomAlertDialog>
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 15),
                       alignment: Alignment.center,
-                      child: Text(
-                        widget.cancelText,
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimary
-                              .withAlpha(200),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                       decoration: BoxDecoration(
                         border: Border(
                           top: BorderSide(
@@ -106,6 +96,16 @@ class _CustomAlertDialogState extends State<CustomAlertDialog>
                                   .onPrimary
                                   .withAlpha(150),
                               width: 0.1),
+                        ),
+                      ),
+                      child: Text(
+                        widget.cancelText,
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withAlpha(200),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -123,18 +123,6 @@ class _CustomAlertDialogState extends State<CustomAlertDialog>
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 15),
                         alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.confirmText,
-                              style: TextStyle(
-                                color: widget.variant,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
                         decoration: BoxDecoration(
                           border: Border(
                             left: BorderSide(
@@ -150,6 +138,18 @@ class _CustomAlertDialogState extends State<CustomAlertDialog>
                                     .withAlpha(150),
                                 width: 0.1),
                           ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.confirmText,
+                              style: TextStyle(
+                                color: widget.variant,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

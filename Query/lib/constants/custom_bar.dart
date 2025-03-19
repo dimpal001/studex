@@ -6,7 +6,7 @@ class CustomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 60,
+      width: 65,
       height: 5,
       margin: const EdgeInsets.only(top: 5, bottom: 15),
       decoration: BoxDecoration(

@@ -10,14 +10,14 @@ class SkeletonLoader extends StatelessWidget {
   final bool circle;
 
   const SkeletonLoader({
-    Key? key,
+    super.key,
     this.itemCount = 5,
     this.padding = const EdgeInsets.all(16),
     this.baseColor,
     this.highlightColor,
     this.borderRadius = 12.0,
     this.circle = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

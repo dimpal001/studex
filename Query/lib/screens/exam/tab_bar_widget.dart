@@ -24,12 +24,13 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: Padding(
         padding: const EdgeInsets.all(5),
         child: Row(
+          spacing: 7,
           children: [
             TabItem(
               title: "Upcoming",
@@ -75,18 +76,19 @@ class TabItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: isSelected
-                ? Theme.of(context).colorScheme.surface
-                : Colors.transparent,
-          ),
+              borderRadius: BorderRadius.circular(8),
+              color: isSelected
+                  ? Theme.of(context).colorScheme.surfaceContainer
+                  : Colors.transparent,
+              border: Border.all(
+                  color: Theme.of(context).colorScheme.surfaceContainer)),
           child: Center(
             child: Text(
               title,
               style: TextStyle(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey,
+                    : Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),

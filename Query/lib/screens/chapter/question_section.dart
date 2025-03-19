@@ -13,10 +13,10 @@ class QuestionSection extends StatefulWidget {
   final String subjectName;
 
   const QuestionSection({
-    Key? key,
+    super.key,
     required this.subjectId,
     required this.subjectName,
-  }) : super(key: key);
+  });
 
   @override
   _QuestionSectionState createState() => _QuestionSectionState();

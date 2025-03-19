@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/constants/app_color.dart';
 
 class PlansScreen extends StatelessWidget {
+  const PlansScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

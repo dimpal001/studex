@@ -7,7 +7,7 @@ import 'package:my_flutter_app/screens/searchUser/search_user_screen.dart';
 class BottomNavBar extends StatefulWidget {
   final int selectedIndex;
 
-  const BottomNavBar({Key? key, required this.selectedIndex}) : super(key: key);
+  const BottomNavBar({super.key, required this.selectedIndex});
 
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
@@ -51,19 +51,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
       padding: const EdgeInsets.only(top: 4, bottom: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context).colorScheme.onPrimary.withAlpha(20),
-            width: 1.0,
-          ),
-        ),
       ),
       child: ClipRRect(
-        child: new BottomNavigationBar(
+        child: BottomNavigationBar(
           currentIndex: widget.selectedIndex,
           onTap: _onItemTapped,
           backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
+          selectedItemColor: Theme.of(context).colorScheme.secondary,
           unselectedItemColor:
               Theme.of(context).colorScheme.onPrimary.withAlpha(150),
           showSelectedLabels: true,

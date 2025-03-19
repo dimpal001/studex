@@ -18,7 +18,7 @@ class _AddDetailsScreenState extends State<AddUserDetailsScreen> {
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _subjects = [];
   String? _selectedClassId;
-  List<String> _selectedSubjectIds = [];
+  final List<String> _selectedSubjectIds = [];
   bool _isLoading = false;
 
   @override

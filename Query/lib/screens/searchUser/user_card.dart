@@ -5,20 +5,21 @@ class UserCard extends StatelessWidget {
   final Map<String, dynamic> user;
   final String status;
 
-  const UserCard({Key? key, required this.user, required this.status})
-      : super(key: key);
+  const UserCard({super.key, required this.user, required this.status});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+                width: 0.5,
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(50))),
         child: InkWell(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(8),
           onTap: () {
             Navigator.push(
               context,
@@ -101,14 +102,14 @@ class UserCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .primary
+                                  .secondary
                                   .withAlpha(30),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               "75% Progress",
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -135,7 +136,7 @@ class UserCard extends StatelessWidget {
           onPressed: () {},
           style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
@@ -146,7 +147,7 @@ class UserCard extends StatelessWidget {
           onPressed: () {},
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                Theme.of(context).colorScheme.primary.withAlpha(50),
           ),
           child: Text('Following',
               style: TextStyle(color: Theme.of(context).colorScheme.primary)),
@@ -164,9 +165,9 @@ class UserCard extends StatelessWidget {
         return ElevatedButton(
           onPressed: () {}, // Add follow logic
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               side: BorderSide(color: Theme.of(context).colorScheme.primary),
             ),
           ),

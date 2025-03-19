@@ -9,13 +9,13 @@ class QuestionCard extends StatelessWidget {
   final String answer;
 
   const QuestionCard({
-    Key? key,
+    super.key,
     required this.questionId,
     required this.question,
     required this.subject,
     required this.time,
     required this.answer,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

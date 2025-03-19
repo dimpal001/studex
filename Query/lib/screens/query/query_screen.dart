@@ -4,9 +4,12 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:my_flutter_app/constants/Alert.dart';
 import 'package:my_flutter_app/constants/api.dart';
 import 'package:my_flutter_app/constants/bottom_nav_bar.dart';
+import 'package:my_flutter_app/constants/custom_bottom_sheet.dart';
+import 'package:my_flutter_app/constants/custom_snackbar.dart';
 import 'package:my_flutter_app/constants/markdown_stylesheet.dart';
 import 'package:my_flutter_app/screens/query/action_button.dart';
 import 'package:my_flutter_app/screens/query/dropdown_button.dart';
@@ -17,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
 
 class QueryScreen extends StatefulWidget {
   const QueryScreen({super.key});
@@ -26,7 +30,7 @@ class QueryScreen extends StatefulWidget {
 }
 
 class _QueryScreenState extends State<QueryScreen> {
-  List<Map<String, String>> _questionsList = [];
+  final List<Map<String, String>> _questionsList = [];
   final TextEditingController _questionController = TextEditingController();
   String? _selectedSubject;
   String? _selectedMarks;
@@ -157,7 +161,8 @@ class _QueryScreenState extends State<QueryScreen> {
     final language = _selectedLanguage;
 
     if (question.isEmpty) {
-      Alert.show(context, "Please enter a question", type: SnackbarType.error);
+      CustomSnackbar.show(context,
+          message: 'Please enter a question', variant: SnackbarVariant.error);
       return;
     }
 
@@ -267,7 +272,7 @@ class _QueryScreenState extends State<QueryScreen> {
             ScrollController scrollController = ScrollController();
             double initialSize = 0.75;
 
-            void _scrollToBottom() {
+            void scrollToBottom() {
               if (scrollController.hasClients) {
                 scrollController.animateTo(
                   scrollController.position.maxScrollExtent,
@@ -277,7 +282,7 @@ class _QueryScreenState extends State<QueryScreen> {
               }
             }
 
-            void _scrollToTop() {
+            void scrollToTop() {
               if (scrollController.hasClients) {
                 scrollController.animateTo(
                   scrollController.position.minScrollExtent,
@@ -287,7 +292,7 @@ class _QueryScreenState extends State<QueryScreen> {
               }
             }
 
-            void _startAutoScrolling() {
+            void startAutoScrolling() {
               if (!_isTypingComplete &&
                   _currentAnswer != null &&
                   scrollController.hasClients) {
@@ -295,7 +300,7 @@ class _QueryScreenState extends State<QueryScreen> {
                   if (_isTypingComplete || !scrollController.hasClients) {
                     timer.cancel();
                   } else {
-                    _scrollToBottom();
+                    scrollToBottom();
                   }
                 });
               }
@@ -303,7 +308,7 @@ class _QueryScreenState extends State<QueryScreen> {
 
             if (!_isTypingComplete && _currentAnswer != null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                _startAutoScrolling();
+                startAutoScrolling();
               });
             }
 
@@ -427,8 +432,9 @@ class _QueryScreenState extends State<QueryScreen> {
                                         ? buildSkeletonLoader(context)
                                         : MarkdownBody(
                                             data: _currentQuestion ?? '',
-                                            styleSheet: buildMarkdownStyleSheet(
-                                                context),
+                                            styleSheet:
+                                                customMarkdownStyleSheet(
+                                                    context),
                                           ),
                                   ),
                                   const SizedBox(height: 24),
@@ -471,11 +477,19 @@ class _QueryScreenState extends State<QueryScreen> {
                                       },
                                       child: _isTypingComplete
                                           ? MarkdownBody(
-                                              key: const ValueKey('complete'),
+                                              selectable: true,
                                               data: _currentAnswer ?? '',
-                                              styleSheet:
-                                                  buildMarkdownStyleSheet(
-                                                      context),
+                                              builders: {
+                                                'latex': LatexElementBuilder(
+                                                  textStyle: const TextStyle(
+                                                      color: Colors.blue),
+                                                  textScaleFactor: 1.2,
+                                                ),
+                                              },
+                                              extensionSet: md.ExtensionSet(
+                                                [LatexBlockSyntax()],
+                                                [LatexInlineSyntax()],
+                                              ),
                                             )
                                           : AnimatedTextKit(
                                               key: ValueKey(_currentAnswer),
@@ -497,7 +511,7 @@ class _QueryScreenState extends State<QueryScreen> {
                                                 setModalState(() {
                                                   _isTypingComplete = true;
                                                 });
-                                                _scrollToTop();
+                                                scrollToTop();
                                               },
                                             ),
                                     )
@@ -529,6 +543,60 @@ class _QueryScreenState extends State<QueryScreen> {
     );
   }
 
+  void _buildInfoSheet(BuildContext context) {
+    CustomBottomSheet.show(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _infoTile(Icons.school, "Educational AI Assistant",
+              "This app is designed to assist students in generating answers, explanations, and study material using AI-powered models."),
+          _infoTile(Icons.computer, "Powered by AI",
+              "It integrates OpenAI, Grok, and DeepSeek APIs to provide accurate and context-aware responses."),
+          _infoTile(Icons.lightbulb, "Smart Learning",
+              "Users can input questions and get detailed responses tailored to their educational needs."),
+          _infoTile(Icons.book, "Multi-Language Support",
+              "Supports multiple languages including English, Hindi, and Assamese for broader accessibility."),
+          _infoTile(Icons.shield, "Privacy & Security",
+              "User data is kept secure, and no personal information is shared with third parties."),
+          _infoTile(Icons.settings, "Customizable Experience",
+              "Offers customization options for personalized study sessions."),
+        ],
+      ),
+    );
+  }
+
+  /// Info Tile Widget
+  Widget _infoTile(IconData icon, String title, String description) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -541,11 +609,11 @@ class _QueryScreenState extends State<QueryScreen> {
               color: Theme.of(context).colorScheme.primary),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           IconButton(
             icon: Icon(Icons.history,
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200)),
+                color: Theme.of(context).colorScheme.onPrimary),
             onPressed: () {
               Navigator.push(
                 context,
@@ -555,9 +623,11 @@ class _QueryScreenState extends State<QueryScreen> {
             tooltip: 'View History',
           ),
           IconButton(
-            icon: Icon(Icons.more_vert,
-                color: Theme.of(context).colorScheme.onPrimary.withAlpha(200)),
-            onPressed: () {},
+            icon: Icon(Icons.info_outline,
+                color: Theme.of(context).colorScheme.onPrimary),
+            onPressed: () {
+              _buildInfoSheet(context);
+            },
             tooltip: 'More Options',
           ),
         ],

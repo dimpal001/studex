@@ -9,12 +9,12 @@ class QuestionCard extends StatelessWidget {
   final DateTime createdAt;
 
   const QuestionCard({
-    Key? key,
+    super.key,
     required this.questionId,
     required this.title,
     required this.subject,
     required this.createdAt,
-  }) : super(key: key);
+  });
 
   void _navigateToDetailScreen(BuildContext context) {
     Navigator.push(
@@ -33,24 +33,26 @@ class QuestionCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => _navigateToDetailScreen(context),
       child: Card(
+        elevation: 0,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             side: BorderSide(
                 color: Theme.of(context).colorScheme.onPrimary.withAlpha(30))),
         color: colorScheme.surface,
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surface,
-                colorScheme.surfaceContainer.withAlpha(250),
-              ],
-            ),
-          ),
+          color: Colors.transparent,
+          // decoration: BoxDecoration(
+          //   borderRadius: BorderRadius.circular(12),
+          //   gradient: LinearGradient(
+          //     begin: Alignment.topLeft,
+          //     end: Alignment.bottomRight,
+          //     colors: [
+          //       colorScheme.surface,
+          //       colorScheme.surfaceContainer.withAlpha(250),
+          //     ],
+          //   ),
+          // ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -76,7 +78,7 @@ class QuestionCard extends StatelessWidget {
                       child: Text(
                         subject,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: colorScheme.primary,
                           letterSpacing: 0.2,
@@ -89,7 +91,7 @@ class QuestionCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.timelapse,
-                          color: colorScheme.onSurface.withOpacity(0.6),
+                          color: colorScheme.onSurface.withAlpha(150),
                           size: 16,
                         ),
                         const SizedBox(width: 6),
@@ -97,7 +99,7 @@ class QuestionCard extends StatelessWidget {
                           timeAgo,
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurface.withOpacity(0.7),
+                            color: colorScheme.onSurface.withAlpha(150),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -109,7 +111,7 @@ class QuestionCard extends StatelessWidget {
                 Text(
                   title.length > 90 ? '${title.substring(0, 90)}...' : title,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                     height: 1.3,

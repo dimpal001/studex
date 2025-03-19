@@ -6,6 +6,8 @@ import 'package:my_flutter_app/screens/home/home_screen.dart';
 import 'package:my_flutter_app/screens/auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }

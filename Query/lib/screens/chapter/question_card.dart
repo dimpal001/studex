@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/constants/api.dart';
 import 'package:my_flutter_app/constants/custom_bar.dart';
+import 'package:my_flutter_app/constants/custom_bottom_sheet.dart';
 import 'package:my_flutter_app/constants/custom_snackbar.dart';
 import 'package:my_flutter_app/constants/user_card.dart';
 import 'package:my_flutter_app/screens/questions/question_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 Future<void> updateQuestionChapter(
     String questionId, String newChapterId) async {
@@ -63,14 +65,14 @@ class QuestionCard extends StatefulWidget {
   final VoidCallback? onEdit;
 
   const QuestionCard({
-    Key? key,
+    super.key,
     required this.question,
     required this.chapters,
     required this.index,
     this.onDelete,
     this.onMove,
     this.onEdit,
-  }) : super(key: key);
+  });
 
   @override
   State<QuestionCard> createState() => _QuestionCardState();
@@ -119,57 +121,37 @@ class _QuestionCardState extends State<QuestionCard> {
   }
 
   void _showOptionsMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildOptionsSheet(context),
-    );
+    CustomBottomSheet.show(
+        context: context, child: _buildOptionsSheet(context));
   }
 
   Widget _buildOptionsSheet(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Colors.grey[400],
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(height: 15),
-          _buildMenuItem(
-            context,
-            icon: Icons.drive_file_move,
-            title: "Move to Another Chapter",
-            color: Colors.orange,
-            onTap: () => _showMoveToChapterSheet(context),
-          ),
-          _buildMenuItem(
-            context,
-            icon: Icons.share,
-            title: "Share with a Friend",
-            color: Colors.green,
-            onTap: () => _showShareWithUsersSheet(context),
-          ),
-          _buildMenuItem(
-            context,
-            icon: Icons.delete,
-            title: "Delete Question",
-            color: Colors.red,
-            onTap: () => _showDeleteConfirmation(context),
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildMenuItem(
+          context,
+          icon: Icons.drive_file_move,
+          title: "Move to Another Chapter",
+          color: Colors.orange,
+          onTap: () => _showMoveToChapterSheet(context),
+        ),
+        _buildMenuItem(
+          context,
+          icon: Icons.share,
+          title: "Share with a Friend",
+          color: Colors.green,
+          onTap: () => _showShareWithUsersSheet(context),
+        ),
+        _buildMenuItem(
+          context,
+          icon: Icons.delete,
+          title: "Delete Question",
+          color: Colors.red,
+          onTap: () => _showDeleteConfirmation(context),
+        ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 
@@ -366,9 +348,20 @@ class _QuestionCardState extends State<QuestionCard> {
       required Color color,
       VoidCallback? onTap}) {
     return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color.withAlpha(120),
-        child: Icon(icon, color: color),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withAlpha(120),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
+        ),
       ),
       title: Text(title, style: const TextStyle(fontSize: 16)),
       onTap: onTap,
@@ -379,38 +372,40 @@ class _QuestionCardState extends State<QuestionCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onLongPress: () => _showOptionsMenu(context),
-      child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(15),
-          leading: CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            child: Text(
-              "${widget.index + 1}",
-              style: const TextStyle(color: Colors.white),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Card(
+          color: Theme.of(context).colorScheme.surface,
+          margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+              width: 1,
             ),
           ),
-          title: Text(
-            widget.question['content'].length > 100
-                ? "${widget.question['content'].substring(0, 100)}..."
-                : widget.question['content'],
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(15),
+            title: Text(
+              widget.question['content'].length > 82
+                  ? "${widget.question['content'].substring(0, 82)}..."
+                  : widget.question['content'],
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              timeago.format(DateTime.parse(widget.question['createdAt'])),
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      QuestionScreen(questionId: widget.question['id']),
+                ),
+              );
+            },
           ),
-          trailing:
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    QuestionScreen(questionId: widget.question['id']),
-              ),
-            );
-          },
         ),
       ),
     );

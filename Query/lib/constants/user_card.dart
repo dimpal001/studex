@@ -9,14 +9,14 @@ class UserCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const UserCard({
-    Key? key,
+    super.key,
     required this.userId,
     required this.fullName,
     required this.profileUrl,
     required this.className,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

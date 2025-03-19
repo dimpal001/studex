@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class ExamReportScreen extends StatefulWidget {
   final Map<String, dynamic> examResult;
 
-  const ExamReportScreen({Key? key, required this.examResult})
-      : super(key: key);
+  const ExamReportScreen({super.key, required this.examResult});
 
   @override
   State<ExamReportScreen> createState() => _ExamReportScreenState();
@@ -42,7 +41,7 @@ class _ExamReportScreenState extends State<ExamReportScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: const Text(
           'Exam Report',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
@@ -103,8 +102,7 @@ class ScoreCard extends StatelessWidget {
   final Animation<double> progressAnimation;
 
   const ScoreCard(
-      {Key? key, required this.examResult, required this.progressAnimation})
-      : super(key: key);
+      {super.key, required this.examResult, required this.progressAnimation});
 
   Color getScoreColor(int score) {
     if (score >= 85) {
@@ -123,8 +121,11 @@ class ScoreCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(
+            color: Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+            width: 1),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
@@ -187,15 +188,18 @@ class ScoreCard extends StatelessWidget {
 class ExamDetailsCard extends StatelessWidget {
   final Map<String, dynamic> examResult;
 
-  const ExamDetailsCard({Key? key, required this.examResult}) : super(key: key);
+  const ExamDetailsCard({super.key, required this.examResult});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16)),
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+              width: 1),
+          borderRadius: BorderRadius.circular(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -245,16 +249,16 @@ class ActionButtons extends StatelessWidget {
   final VoidCallback onShareTap;
 
   const ActionButtons({
-    Key? key,
+    super.key,
     required this.onQuestionsTap,
     required this.onChallengeTap,
     required this.onShareTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildButton(context, 'Questions', Icons.quiz, onQuestionsTap),
         _buildButton(
@@ -272,17 +276,22 @@ class ActionButtons extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Theme.of(context).colorScheme.primary)),
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+                width: 0.7,
+                color: Theme.of(context).colorScheme.onPrimary.withAlpha(80))),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -291,7 +300,7 @@ class ActionButtons extends StatelessWidget {
 }
 
 class QuestionsDrawer extends StatelessWidget {
-  QuestionsDrawer({Key? key}) : super(key: key);
+  QuestionsDrawer({super.key});
 
   final Map<String, dynamic> examData = {
     "id": "exam_12345",
@@ -535,7 +544,7 @@ class QuestionsDrawer extends StatelessWidget {
 }
 
 class ChallengeDrawer extends StatefulWidget {
-  const ChallengeDrawer({Key? key}) : super(key: key);
+  const ChallengeDrawer({super.key});
 
   @override
   State<ChallengeDrawer> createState() => _ChallengeDrawerState();
@@ -748,7 +757,7 @@ class _ChallengeDrawerState extends State<ChallengeDrawer> {
 class ShareDialog extends StatefulWidget {
   final Map<String, dynamic> examResult;
 
-  const ShareDialog({Key? key, required this.examResult}) : super(key: key);
+  const ShareDialog({super.key, required this.examResult});
 
   @override
   State<ShareDialog> createState() => _ShareDialogState();

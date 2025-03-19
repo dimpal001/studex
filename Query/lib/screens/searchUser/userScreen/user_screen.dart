@@ -9,7 +9,8 @@ class UserProfileScreen extends StatelessWidget {
   final int following;
   final int posts;
 
-  UserProfileScreen({
+  const UserProfileScreen({
+    super.key,
     required this.userName,
     required this.userEmail,
     required this.profileImage,
@@ -23,29 +24,22 @@ class UserProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(userName),
-        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          userName,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           children: [
-            // Profile Header
             _buildProfileHeader(context),
-
             SizedBox(height: 20),
-
-            // Bio Section
-            _buildBioSection(),
-
+            _buildStatsSection(context),
             SizedBox(height: 20),
-
-            // User Stats (Followers, Following, Posts)
-            _buildStatsSection(),
-
-            SizedBox(height: 20),
-
-            // User Posts Section
             _buildUserPosts(),
           ],
         ),
@@ -54,81 +48,160 @@ class UserProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundImage: NetworkImage(profileImage),
-        ),
-        SizedBox(height: 10),
-        Text(
-          userName,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          userEmail,
-          style: TextStyle(color: Colors.grey),
-        ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {},
-              child: Text("Follow"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+    return Padding(
+      padding: const EdgeInsets.all(0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    width: 3,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    "https://picsum.photos/200",
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            OutlinedButton(
-              onPressed: () {},
-              child: Text("Message"),
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              SizedBox(height: 15),
+              Text(
+                userName,
+                style: TextStyle(
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            "Passionate developer, tech enthusiast & lifelong learner and many more 🚀",
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(150),
             ),
-          ],
-        )
-      ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    "Follow",
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    "Message",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBioSection() {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        bio,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 16),
-      ),
-    );
-  }
-
-  Widget _buildStatsSection() {
+  Widget _buildStatsSection(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildStatItem("Followers", followers.toString()),
-        _buildStatItem("Following", following.toString()),
-        _buildStatItem("Posts", posts.toString()),
+        _buildStatItem(context, "Friends", '12K', Icons.group, Colors.blue),
+        _buildStatItem(
+            context, "Questions", '1.5K', Icons.question_answer, Colors.green),
+        _buildStatItem(
+            context, "Progress", '83%', Icons.trending_up, Colors.orange),
       ],
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: TextStyle(color: Colors.grey)),
-      ],
+  Widget _buildStatItem(BuildContext context, String label, String value,
+      IconData icon, Color gradientColor) {
+    return Container(
+      width: 100, // Fixed width for consistency
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
+              width: 1)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: gradientColor,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: gradientColor.withAlpha(200),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onPrimary.withAlpha(200),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -144,16 +217,31 @@ class UserProfileScreen extends StatelessWidget {
           shrinkWrap: true,
           itemCount: 3,
           itemBuilder: (context, index) {
-            return Card(
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onPrimary.withAlpha(40),
+                  width: 1,
+                ),
+              ),
               margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: Icon(Icons.article, color: Colors.blue),
-                title: Text("Post Title $index"),
-                subtitle: Text("This is a sample post description."),
-                trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  // Navigate to post details
-                },
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.article,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text("Post Title $index"),
+                  subtitle: Text("This is a sample post description."),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    // Navigate to post details
+                  },
+                ),
               ),
             );
           },

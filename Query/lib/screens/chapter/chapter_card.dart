@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/constants/custom_bottom_sheet.dart';
 
 class ChapterCard extends StatelessWidget {
   final Map<String, dynamic> chapter;
@@ -9,66 +10,44 @@ class ChapterCard extends StatelessWidget {
   final VoidCallback? onEdit;
 
   const ChapterCard({
-    Key? key,
+    super.key,
     required this.chapter,
     required this.index,
     this.onTap,
     this.onDelete,
     this.onMove,
     this.onEdit,
-  }) : super(key: key);
+  });
 
   void _showOptionsMenu(BuildContext context) {
-    showModalBottomSheet(
+    CustomBottomSheet.show(
       context: context,
-      isScrollControlled: true, // Ensures a smooth modal experience
-      backgroundColor:
-          Colors.transparent, // Transparent background for custom styling
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildMenuItem(
+            context,
+            icon: Icons.edit,
+            title: "Edit Chapter",
+            color: Colors.blueAccent,
+            onTap: onEdit,
           ),
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              const SizedBox(height: 15),
-              _buildMenuItem(
-                context,
-                icon: Icons.edit,
-                title: "Edit Chapter",
-                color: Colors.blueAccent,
-                onTap: onEdit,
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.drive_file_move,
-                title: "Move to Another Subject",
-                color: Colors.orange,
-                onTap: onMove,
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.delete,
-                title: "Delete Chapter",
-                color: Colors.red,
-                onTap: onDelete,
-              ),
-              const SizedBox(height: 10),
-            ],
+          _buildMenuItem(
+            context,
+            icon: Icons.drive_file_move,
+            title: "Move to Another Subject",
+            color: Colors.orange,
+            onTap: onMove,
           ),
-        );
-      },
+          _buildMenuItem(
+            context,
+            icon: Icons.delete,
+            title: "Delete Chapter",
+            color: Colors.red,
+            onTap: onDelete,
+          ),
+        ],
+      ),
     );
   }
 
@@ -78,11 +57,19 @@ class ChapterCard extends StatelessWidget {
       required Color color,
       VoidCallback? onTap}) {
     return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.2),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withAlpha(50),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
         child: Icon(icon, color: color),
       ),
-      title: Text(title, style: TextStyle(color: Colors.white, fontSize: 16)),
+      title: Text(title,
+          style: TextStyle(
+              color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
       onTap: () {
         Navigator.pop(context);
         if (onTap != null) onTap();
@@ -92,38 +79,78 @@ class ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onLongPress: () => _showOptionsMenu(context),
       child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+        elevation: 4,
+        margin: const EdgeInsets.all(8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(15),
-          leading: CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            child: Text(
-              "${index + 1}",
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-          title: Text(
-            chapter['name'] ?? 'Unnamed Chapter',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          subtitle: Text(
-            "${chapter['questions'] ?? 0} Questions",
-            style: const TextStyle(color: Colors.white70),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
-          onTap: onTap,
-        ),
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+                color: colorScheme.onPrimary.withAlpha(50), width: 1)),
+        color: colorScheme.surface,
+        child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            splashColor: colorScheme.primary.withAlpha(50),
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    chapter['name'] ?? 'Unnamed Chapter',
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  // Questions Count
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.question_answer,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${chapter['questions'] ?? 0} Questions",
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withAlpha(180),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.trending_up,
+                        size: 16,
+                        color: colorScheme.secondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${chapter['progress'] ?? '0%'} Completed",
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withAlpha(150),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )),
       ),
     );
   }

@@ -5,10 +5,10 @@ class ErrorComponent extends StatelessWidget {
   final VoidCallback onReload;
 
   const ErrorComponent({
-    Key? key,
+    super.key,
     this.message = "Something went wrong!",
     required this.onReload,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

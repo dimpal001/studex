@@ -7,10 +7,10 @@ class ChapterScreen extends StatefulWidget {
   final String subjectName;
 
   const ChapterScreen({
-    Key? key,
+    super.key,
     required this.subjectId,
     required this.subjectName,
-  }) : super(key: key);
+  });
 
   @override
   _ChapterScreenState createState() => _ChapterScreenState();
@@ -62,15 +62,20 @@ class _ChapterScreenState extends State<ChapterScreen>
             fontSize: 22,
           ),
         ),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // Add search functionality
-            },
-          ),
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text(
+              "Progress 75%",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
         ],
       ),
       body: Column(
@@ -79,7 +84,7 @@ class _ChapterScreenState extends State<ChapterScreen>
           Container(
             padding: EdgeInsets.only(left: 12, right: 12, bottom: 10),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
+              color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black12,
@@ -135,12 +140,18 @@ class _ChapterScreenState extends State<ChapterScreen>
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
           decoration: BoxDecoration(
             color: isActive
-                ? Theme.of(context).colorScheme.primary
+                ? Theme.of(context).colorScheme.surfaceContainer
                 : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: isActive
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onPrimary.withAlpha(50),
+              width: isActive ? 2 : 1,
+            ),
           ),
           child: Text(
             title,
