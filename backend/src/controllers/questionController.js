@@ -36,6 +36,8 @@ const askQuestion = async (request, response) => {
         .json({ error: 'Question, image, or User data is missing' })
     }
 
+    console.log('Its calling')
+
     if (image) {
       console.log('Image is there')
       extractedText = await convertImageToText(image.path)
@@ -70,18 +72,33 @@ const askQuestion = async (request, response) => {
         "answer": "Markdown formatted answer"
       }`
 
-    const aiResponse = await openai.chat.completions.create({
+    response.setHeader('Content-Type', 'text/event-stream')
+    response.setHeader('Cache-Control', 'no-cache')
+    response.setHeader('Connection', 'keep-alive')
+
+    let completeResponse = ''
+
+    const stream = await openai.chat.completions.create({
       model: 'deepseek-chat',
       messages: [
         { role: 'system', content: 'You are Studex AI, powered by DeepSeek.' },
         { role: 'user', content: prompt },
       ],
+      stream: true,
     })
 
-    const responseContent = aiResponse.choices[0].message.content
-    console.log('Raw AI Response:', responseContent)
+    for await (const chunk of stream) {
+      const content = chunk.choices?.[0]?.delta?.content || ''
+      if (content) {
+        response.write(content)
+        completeResponse += content
+      }
+    }
 
-    const rawJson = responseContent
+    response.end() // Close the stream
+
+    // Clean up and parse the final response
+    const rawJson = completeResponse
       .replace(/```json\s*/g, '')
       .replace(/```/g, '')
 
@@ -99,6 +116,7 @@ const askQuestion = async (request, response) => {
         .json({ error: 'AI response is missing data.' })
     }
 
+    // Store the response in the database after completion
     const result = await prisma.$transaction(async (tx) => {
       const userQuestion = await tx.question.create({
         data: {
@@ -121,12 +139,10 @@ const askQuestion = async (request, response) => {
       return { ...userQuestion, answers: [questionAnswer] }
     })
 
-    return response.status(200).json({ resData: result })
+    console.log('Stored in DB:', result)
   } catch (error) {
     console.error('Error:', error.message)
-    return response.status(500).json({
-      error: 'Failed generating response.',
-    })
+    response.status(500).json({ error: 'Failed generating response.' })
   }
 }
 
